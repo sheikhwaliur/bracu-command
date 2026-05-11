@@ -123,7 +123,7 @@ export default function MentorshipPage() {
   const filtered = mentors
     .filter(m => dept === 'All' || m.dept === dept)
     .filter(m => filter === 'all' || m.available)
-    .filter(m => !search || (m.skills + m.courses + m.interests + m.bio).toLowerCase().includes(search.toLowerCase()))
+    .filter(m => !search || ([...m.skills, ...m.courses, ...m.interests].join(' ') + ' ' + m.bio).toLowerCase().includes(search.toLowerCase()))
     .sort((a, b) => b.rating - a.rating)
 
   const submitBecomeForm = () => {
