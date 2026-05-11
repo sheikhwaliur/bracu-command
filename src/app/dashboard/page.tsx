@@ -72,20 +72,36 @@ export default function Dashboard() {
     return matchCat && matchSearch
   })
 
-  const s = {
+  // 1. These go BEFORE const s
+  const catBtn = (active: boolean): React.CSSProperties => ({
+    background: active ? 'var(--red)' : 'transparent',
+    color: active ? 'var(--paper)' : 'var(--faded)',
+    border: `1px solid ${active ? 'var(--red)' : 'var(--border)'}`,
+    padding: '8px 14px', fontSize: '9px', letterSpacing: '1.5px',
+    textTransform: 'uppercase', fontFamily: 'IBM Plex Mono,monospace',
+    cursor: 'crosshair', transition: 'all .15s', whiteSpace: 'nowrap',
+  })
+  
+  const tileStyle = (id: string): React.CSSProperties => ({
+    background: hoveredTile === id ? 'var(--ink2)' : 'var(--ink)',
+    padding: '28px', cursor: 'crosshair', position: 'relative',
+    overflow: 'hidden', transition: 'background .2s', display: 'flex',
+    flexDirection: 'column', border: 'none', textAlign: 'left',
+    color: 'var(--paper)', fontFamily: 'IBM Plex Mono,monospace', width: '100%',
+  })
+
+  const s: {[key: string]: React.CSSProperties} = {
     page: { minHeight: '100vh', background: 'var(--ink)', color: 'var(--paper)', fontFamily: 'IBM Plex Mono,monospace' },
     nav: { position: 'fixed', top: 0, left: 0, right: 0, height: '52px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 40px', background: 'rgba(12,11,9,0.95)', backdropFilter: 'blur(16px)', borderBottom: '1px solid var(--border)', zIndex: 500 },
     wrap: { maxWidth: '1200px', margin: '0 auto', padding: '0 40px' },
     hero: { padding: '80px 0 40px', borderBottom: '1px solid var(--border)', display: 'grid', gridTemplateColumns: '1fr auto', gap: '32px', alignItems: 'end' },
-    h1: { fontFamily: 'Bebas Neue,sans-serif', fontSize: 'clamp(36px,4.5vw,56px)', letterSpacing: '2px', lineHeight: 1 },
-    sub: { fontSize: '11px', color: 'var(--faded)', marginTop: '8px', letterSpacing: '.5px', lineHeight: 1.8 },
+    h1: { fontFamily: 'Bebas Neue,sans-serif', fontSize: 'clamp(36px,4.5vw,56px)', letterSpacing: '2px', lineHeight: '1' },
+    sub: { fontSize: '11px', color: 'var(--faded)', marginTop: '8px', letterSpacing: '.5px', lineHeight: '1.8' },
     seatBox: { background: 'var(--ink2)', border: '1px solid var(--border)', padding: '14px 20px', textAlign: 'right', minWidth: '180px' },
     searchBar: { display: 'flex', gap: '8px', margin: '28px 0 20px', alignItems: 'center' },
     searchInp: { flex: 1, background: 'var(--ink2)', border: '1px solid var(--border)', color: 'var(--paper)', fontFamily: 'IBM Plex Mono,monospace', fontSize: '12px', padding: '10px 16px', outline: 'none', letterSpacing: '.5px' },
-    catBtn: (active: boolean): React.CSSProperties => ({ background: active ? 'var(--red)' : 'transparent', color: active ? 'var(--paper)' : 'var(--faded)', border: `1px solid ${active ? 'var(--red)' : 'var(--border)'}`, padding: '8px 14px', fontSize: '9px', letterSpacing: '1.5px', textTransform: 'uppercase', fontFamily: 'IBM Plex Mono,monospace', cursor: 'crosshair', transition: 'all .15s', whiteSpace: 'nowrap' }),
     grid: { display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '2px', background: 'var(--border)' },
-    tile: (id: string): React.CSSProperties => ({ background: hoveredTile === id ? 'var(--ink2)' : 'var(--ink)', padding: '28px', cursor: 'crosshair', position: 'relative', overflow: 'hidden', transition: 'background .2s', display: 'flex', flexDirection: 'column', border: 'none', textAlign: 'left', color: 'var(--paper)', fontFamily: 'IBM Plex Mono,monospace', width: '100%' }),
-    backTop: { position: 'fixed', bottom: '32px', right: '32px', background: 'var(--red)', color: 'var(--paper)', border: 'none', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', cursor: 'crosshair', zIndex: 400, transition: 'all .2s', opacity: showTop ? 1 : 0, pointerEvents: showTop ? 'all' : 'none' },
+    backTop: { position: 'fixed', bottom: '32px', right: '32px', background: 'var(--red)', color: 'var(--paper)', border: 'none', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', cursor: 'crosshair', zIndex: 400, transition: 'all .2s' },
   }
 
   return (
@@ -154,7 +170,7 @@ export default function Dashboard() {
         </div>
         <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginBottom: '28px' }}>
           {CATEGORIES.map(c => (
-            <button key={c} style={s.catBtn(category === c)} onClick={() => setCategory(c)}>{c}</button>
+            <button key={c} style={catBtn(category === c)} onClick={() => setCategory(c)}>{c}</button>
           ))}
         </div>
 
@@ -172,7 +188,7 @@ export default function Dashboard() {
                 {catTiles.map(t => (
                   <button
                     key={t.id}
-                    style={s.tile(t.id)}
+                    style={tileStyle(t.id)}
                     onClick={() => router.push(`/${t.id}`)}
                     onMouseEnter={() => setHoveredTile(t.id)}
                     onMouseLeave={() => setHoveredTile(null)}
