@@ -72,7 +72,7 @@ export default function Dashboard() {
     return matchCat && matchSearch
   })
 
-  const s: Record<string, React.CSSProperties> = {
+  const s = {
     page: { minHeight: '100vh', background: 'var(--ink)', color: 'var(--paper)', fontFamily: 'IBM Plex Mono,monospace' },
     nav: { position: 'fixed', top: 0, left: 0, right: 0, height: '52px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 40px', background: 'rgba(12,11,9,0.95)', backdropFilter: 'blur(16px)', borderBottom: '1px solid var(--border)', zIndex: 500 },
     wrap: { maxWidth: '1200px', margin: '0 auto', padding: '0 40px' },
