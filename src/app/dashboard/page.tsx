@@ -173,9 +173,9 @@ export default function Dashboard() {
             <div key={cat} style={{ marginBottom: '28px' }}>
               <div style={{ fontSize: '9px', letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--faded)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '12px' }}>
                 {cat}
-                <span style={{ flex: 1, height: '1px', background: 'var(--border)', display: 'inline-block' }} />
+                <span style={{ flex: 1, height: '1px', background: 'transparent', display: 'inline-block' }} />
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: isSystem ? cols2 : cols, gap: '2px', background: 'var(--border)' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isSystem ? cols2 : cols, gap: '2px', background: 'transparent' }}>
                 {catTiles.map(t => (
                   <button
                     key={t.id}
