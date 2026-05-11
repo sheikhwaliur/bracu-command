@@ -50,44 +50,39 @@ function getUrgencyColor(days: number) {
 }
 
 function CountdownDisplay({ exam }: { exam: Exam }) {
-  const [time, setTime] = useState(getTimeLeft(exam.date, exam.time))
-
-  useEffect(() => {
-    const iv = setInterval(() => setTime(getTimeLeft(exam.date, exam.time)), 1000)
-    return () => clearInterval(iv)
-  }, [exam.date, exam.time])
-
-  if (time.past) {
-    return <div style={{ fontFamily: 'Bebas Neue,sans-serif', fontSize: '18px', color: 'var(--faded)', letterSpacing: '2px' }}>DONE</div>
-  }
-
-  const urgency = getUrgencyColor(time.days)
-
-  return (
-    <div style={{ display: 'flex', gap: '8px', alignItems: 'baseline' }}>
-      {time.days > 0 && (
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontFamily: 'Bebas Neue,sans-serif', fontSize: '32px', color: urgency, letterSpacing: '2px', lineHeight: 1 }}>{String(time.days).padStart(2, '0')}</div>
-          <div style={{ fontSize: '8px', color: 'var(--faded)', letterSpacing: '1.5px', textTransform: 'uppercase' }}>days</div>
-        </div>
-      )}
-      <div style={{ fontFamily: 'Bebas Neue,sans-serif', fontSize: '22px', color: urgency, lineHeight: 1, paddingBottom: '12px' }}>:</div>
-      <div style={{ textAlign: 'center' }}>
-        <div style={{ fontFamily: 'Bebas Neue,sans-serif', fontSize: '32px', color: urgency, letterSpacing: '2px', lineHeight: 1 }}>{String(time.hours).padStart(2, '0')}</div>
-        <div style={{ fontSize: '8px', color: 'var(--faded)', letterSpacing: '1.5px', textTransform: 'uppercase' }}>hrs</div>
+    const [time, setTime] = useState(getTimeLeft(exam.date, exam.time))
+  
+    useEffect(() => {
+      const iv = setInterval(() => setTime(getTimeLeft(exam.date, exam.time)), 1000)
+      return () => clearInterval(iv)
+    }, [exam.date, exam.time])
+  
+    if (time.past) {
+      return <div style={{ fontFamily: 'Bebas Neue,sans-serif', fontSize: '18px', color: 'var(--faded)', letterSpacing: '2px', flexShrink: 0 }}>DONE</div>
+    }
+  
+    const urgency = getUrgencyColor(time.days)
+    const units = time.days > 0
+      ? [{ v: time.days, l: 'days' }, { v: time.hours, l: 'hrs' }, { v: time.mins, l: 'min' }, { v: time.secs, l: 'sec' }]
+      : [{ v: time.hours, l: 'hrs' }, { v: time.mins, l: 'min' }, { v: time.secs, l: 'sec' }]
+  
+    return (
+      <div style={{ display: 'flex', gap: '4px', alignItems: 'center', flexShrink: 0 }}>
+        {units.map((u, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <div style={{ textAlign: 'center', minWidth: '36px' }}>
+              <div style={{ fontFamily: 'Bebas Neue,sans-serif', fontSize: 'clamp(18px,4vw,28px)', color: urgency, letterSpacing: '1px', lineHeight: 1 }}>
+                {String(u.v).padStart(2, '0')}
+              </div>
+              <div style={{ fontSize: '7px', color: 'var(--faded)', letterSpacing: '1px', textTransform: 'uppercase' }}>{u.l}</div>
+            </div>
+            {i < units.length - 1 && (
+              <div style={{ fontFamily: 'Bebas Neue,sans-serif', fontSize: 'clamp(16px,3vw,22px)', color: urgency, paddingBottom: '10px' }}>:</div>
+            )}
+          </div>
+        ))}
       </div>
-      <div style={{ fontFamily: 'Bebas Neue,sans-serif', fontSize: '22px', color: urgency, lineHeight: 1, paddingBottom: '12px' }}>:</div>
-      <div style={{ textAlign: 'center' }}>
-        <div style={{ fontFamily: 'Bebas Neue,sans-serif', fontSize: '32px', color: urgency, letterSpacing: '2px', lineHeight: 1 }}>{String(time.mins).padStart(2, '0')}</div>
-        <div style={{ fontSize: '8px', color: 'var(--faded)', letterSpacing: '1.5px', textTransform: 'uppercase' }}>min</div>
-      </div>
-      <div style={{ fontFamily: 'Bebas Neue,sans-serif', fontSize: '22px', color: urgency, lineHeight: 1, paddingBottom: '12px' }}>:</div>
-      <div style={{ textAlign: 'center' }}>
-        <div style={{ fontFamily: 'Bebas Neue,sans-serif', fontSize: '32px', color: urgency, letterSpacing: '2px', lineHeight: 1 }}>{String(time.secs).padStart(2, '0')}</div>
-        <div style={{ fontSize: '8px', color: 'var(--faded)', letterSpacing: '1.5px', textTransform: 'uppercase' }}>sec</div>
-      </div>
-    </div>
-  )
+    )
 }
 
 export default function CountdownPage() {
