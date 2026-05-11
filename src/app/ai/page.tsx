@@ -48,11 +48,11 @@ function getAIResponse(input: string): string {
   }
 
   if (t.includes('past paper') || t.includes('exam pattern') || t.includes('question') || t.includes('practice')) {
-    return `// Past Paper Analysis\n\nScanning BRACU CSE exam archives 2019–2024...\n\nHigh frequency topics found:\n\n📊 Sorting Algorithms — appears in 87% of CSE221 finals\n📊 Graph Traversal (BFS/DFS) — 74% of exams\n📊 Dynamic Programming — 68% of exams\n📊 Greedy Algorithms — 61% of exams\n📊 Hashing — 55% of exams\n\nPredicted exam focus:\n→ DP problems (knapsack, LCS, LIS)\n→ Graph problems (Dijkstra, Bellman-Ford)\n→ Tree traversals\n\nPractice questions generated:\n1. Find shortest path using Dijkstra's for given graph\n2. Solve 0/1 knapsack with DP — items: [2,3,4,5] values: [3,4,5,6] W=5\n3. Implement BFS and DFS for adjacency list\n4. Find LCS of "ABCBDAB" and "BDCAB"\n5. Analyze time complexity of merge sort`
+    return `// Past Paper Analysis\n\nScanning BRACU CSE exam archives 2019–2024...\n\nHigh frequency topics found:\n\n📊 Sorting Algorithms — appears in 87% of CSE221 finals\n📊 Graph Traversal (BFS/DFS) — 74% of exams\n📊 Dynamic Programming — 68% of exams\n📊 Greedy Algorithms — 61% of exams\n📊 Hashing — 55% of exams\n\nPredicted exam focus:\n→ DP problems (knapsack, LCS, LIS)\n→ Graph problems (Dijkstra, Bellman-Ford)\n→ Tree traversals\n\nPractice questions:\n1. Find shortest path using Dijkstra's for given graph\n2. Solve 0/1 knapsack — items: [2,3,4,5] values: [3,4,5,6] W=5\n3. Implement BFS and DFS for adjacency list\n4. Find LCS of "ABCBDAB" and "BDCAB"\n5. Analyze time complexity of merge sort`
   }
 
   if (t.includes('career') || t.includes('job') || t.includes('internship') || t.includes('path')) {
-    return `// Career Path Analysis\n\nBased on CSE background + interests:\n\n🚀 Top Career Paths for BRACU CSE:\n\n1. Software Engineering (Most common)\n→ Skills needed: DSA, system design, web/mobile dev\n→ Companies: Pathao, Shajgoj, Brain Station 23, BJIT\n→ Avg salary BD: 60–150k BDT/month\n\n2. Machine Learning / AI\n→ Skills: Python, ML libraries, math (MAT215 matters!)\n→ Research or industry track available\n→ Requires strong GPA for research roles\n\n3. Cybersecurity\n→ Growing fast in BD\n→ Take CSE445 + CSE446 if available\n→ Certifications: CEH, OSCP\n\n4. Full Stack Development\n→ Fastest path to employment\n→ Learn: React, Node.js, PostgreSQL\n→ Freelancing income possible from semester 4\n\nRecommendation: Start an internship by semester 6. Build 2–3 real projects. GitHub profile matters more than CGPA for most BD companies.`
+    return `// Career Path Analysis\n\nBased on CSE background + interests:\n\n🚀 Top Career Paths for BRACU CSE:\n\n1. Software Engineering (Most common)\n→ Skills: DSA, system design, web/mobile dev\n→ Companies: Pathao, Brain Station 23, BJIT\n→ Avg salary BD: 60–150k BDT/month\n\n2. Machine Learning / AI\n→ Skills: Python, ML libraries, MAT215 matters!\n→ Research or industry track available\n\n3. Cybersecurity\n→ Growing fast in BD\n→ Take CSE445 if available\n→ Certifications: CEH, OSCP\n\n4. Full Stack Development\n→ Fastest path to employment\n→ Learn: React, Node.js, PostgreSQL\n→ Freelancing possible from semester 4\n\nRecommendation: Start an internship by semester 6. Build 2–3 real projects. GitHub profile matters more than CGPA for most BD companies.`
   }
 
   return `// Processing your query...\n\nI understand you're asking about: "${input}"\n\nFor the most accurate BRACU-specific answer, please specify:\n→ Course code (e.g. CSE471, MAT215)\n→ Topic area (e.g. networking, algorithms, linear algebra)\n→ What you need (explanation, practice questions, exam tips)\n\nExamples I can help with:\n• "Explain recursion for CSE220 exam"\n• "CSE341 OS scheduling Gantt chart practice"\n• "MAT215 integration by parts examples"\n• "Build routine — 84 credits done, avoid 8am classes"\n\nI have access to BRACU syllabus data, past papers 2019–2024, and live USIS seat availability.`
@@ -69,7 +69,15 @@ export default function AIPage() {
   const [input, setInput] = useState('')
   const [typing, setTyping] = useState(false)
   const [activeTab, setActiveTab] = useState<'chat' | 'caps'>('chat')
+  const [isMobile, setIsMobile] = useState(false)
   const bodyRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
 
   useEffect(() => {
     if (bodyRef.current) bodyRef.current.scrollTop = bodyRef.current.scrollHeight
@@ -84,7 +92,11 @@ export default function AIPage() {
     setTyping(true)
     setTimeout(() => {
       setTyping(false)
-      setMessages(p => [...p, { role: 'ai', text: getAIResponse(msg), time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }])
+      setMessages(p => [...p, {
+        role: 'ai',
+        text: getAIResponse(msg),
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      }])
     }, 1200 + Math.random() * 800)
   }
 
@@ -96,6 +108,106 @@ export default function AIPage() {
     }])
   }
 
+  const CapabilitiesPanel = () => (
+    <div style={{ background: 'var(--ink)', padding: '20px', overflowY: 'auto' }}>
+      <div style={{ fontSize: '9px', letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--red)', marginBottom: '16px', fontWeight: 700 }}>CAPABILITIES</div>
+      {CAPABILITIES.map((c, i) => (
+        <div key={i} style={{ borderBottom: '1px solid var(--border)', padding: '12px 0', display: 'flex', gap: '10px' }}>
+          <div style={{ fontSize: '16px', flexShrink: 0, marginTop: '2px' }}>{c.icon}</div>
+          <div>
+            <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--paper)', marginBottom: '3px' }}>{c.title}</div>
+            <div style={{ fontSize: '10px', color: 'var(--faded)', lineHeight: 1.7 }}>{c.desc}</div>
+          </div>
+        </div>
+      ))}
+
+      <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--border)' }}>
+        <div style={{ fontSize: '9px', letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--faded)', marginBottom: '10px', fontWeight: 700 }}>TRY ASKING</div>
+        {SUGGESTIONS.map((s, i) => (
+          <button key={i} onClick={() => { send(s); setActiveTab('chat') }}
+            style={{ display: 'block', width: '100%', textAlign: 'left', background: 'none', border: '1px solid var(--border)', color: 'var(--faded)', padding: '8px 12px', fontFamily: 'IBM Plex Mono,monospace', fontSize: '10px', cursor: 'crosshair', marginBottom: '4px', transition: 'all .15s', lineHeight: 1.5 }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(232,57,14,0.4)'; (e.currentTarget as HTMLElement).style.color = 'var(--paper)' }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border)'; (e.currentTarget as HTMLElement).style.color = 'var(--faded)' }}>
+            {s}
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+
+  const ChatPanel = () => (
+    <div style={{ background: 'var(--ink2)', display: 'flex', flexDirection: 'column', minHeight: isMobile ? '70vh' : '500px', flex: 1 }}>
+      {/* Chat top bar */}
+      <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+        <div style={{ fontSize: '9px', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--faded)' }}>AI Engine — bracu/cmd</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '9px', color: 'var(--faded)' }}>
+            <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: 'var(--red)', display: 'inline-block' }} />
+            Online
+          </div>
+          <button onClick={clear}
+            style={{ fontSize: '9px', letterSpacing: '1.5px', textTransform: 'uppercase', background: 'none', border: '1px solid var(--border)', color: 'var(--faded)', padding: '4px 10px', fontFamily: 'IBM Plex Mono,monospace', cursor: 'crosshair' }}>
+            Clear
+          </button>
+        </div>
+      </div>
+
+      {/* Messages */}
+      <div ref={bodyRef} style={{ flex: 1, padding: '16px', display: 'flex', flexDirection: 'column', gap: '14px', overflowY: 'auto' }}>
+        {messages.map((m, i) => (
+          <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: '3px', maxWidth: '90%', alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start', alignItems: m.role === 'user' ? 'flex-end' : 'flex-start' }}>
+            <div style={{ fontSize: '9px', letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--faded)' }}>
+              {m.role === 'user' ? 'You' : 'BRACU CMD AI'} · {m.time}
+            </div>
+            <div style={{ fontSize: '11px', lineHeight: 1.9, color: m.role === 'user' ? 'var(--paper)' : 'var(--faded)', border: `1px solid ${m.role === 'user' ? 'rgba(232,57,14,0.25)' : 'rgba(242,237,228,0.07)'}`, padding: '12px 14px', whiteSpace: 'pre-wrap', fontFamily: 'IBM Plex Mono,monospace', wordBreak: 'break-word' }}>
+              {m.text}
+            </div>
+          </div>
+        ))}
+        {typing && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', maxWidth: '90%', alignSelf: 'flex-start' }}>
+            <div style={{ fontSize: '9px', letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--faded)' }}>BRACU CMD AI</div>
+            <div style={{ fontSize: '11px', color: 'var(--faded)', border: '1px solid rgba(242,237,228,0.07)', padding: '12px 14px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span>Thinking</span>
+              <span style={{ display: 'inline-block', width: '6px', height: '11px', background: 'var(--paper)', animation: 'blink 1s step-end infinite', verticalAlign: 'middle' }} />
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Suggestions row */}
+      {!isMobile && (
+        <div style={{ padding: '8px 16px', borderTop: '1px solid var(--border)', display: 'flex', gap: '6px', overflowX: 'auto', scrollbarWidth: 'none', flexShrink: 0 }}>
+          {SUGGESTIONS.slice(0, 3).map((s, i) => (
+            <button key={i} onClick={() => send(s)}
+              style={{ background: 'rgba(242,237,228,0.03)', border: '1px solid var(--border)', color: 'var(--faded)', padding: '5px 10px', fontFamily: 'IBM Plex Mono,monospace', fontSize: '9px', cursor: 'crosshair', whiteSpace: 'nowrap', flexShrink: 0, transition: 'all .15s' }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(232,57,14,0.4)'; (e.currentTarget as HTMLElement).style.color = 'var(--paper)' }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border)'; (e.currentTarget as HTMLElement).style.color = 'var(--faded)' }}>
+              {s}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Input */}
+      <div style={{ borderTop: '1px solid var(--border)', padding: '12px 16px', display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
+        <input
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && !e.shiftKey && send()}
+          placeholder={isMobile ? 'Ask anything...' : 'Ask anything academic — topics, routine, past papers, career...'}
+          style={{ flex: 1, background: 'transparent', border: 'none', borderBottom: '1px solid rgba(242,237,228,0.1)', color: 'var(--paper)', fontFamily: 'IBM Plex Mono,monospace', fontSize: '12px', padding: '7px 0', outline: 'none', letterSpacing: '.5px' }}
+        />
+        <button onClick={() => send()}
+          style={{ background: 'var(--red)', color: 'var(--paper)', border: 'none', padding: '9px 16px', fontFamily: 'IBM Plex Mono,monospace', fontSize: '10px', letterSpacing: '2px', textTransform: 'uppercase', cursor: 'crosshair', flexShrink: 0, transition: 'opacity .15s' }}
+          onMouseEnter={e => (e.currentTarget.style.opacity = '.85')}
+          onMouseLeave={e => (e.currentTarget.style.opacity = '1')}>
+          Send →
+        </button>
+      </div>
+    </div>
+  )
+
   return (
     <PageLayout
       eyebrow="AI Academic Engine"
@@ -103,115 +215,33 @@ export default function AIPage() {
       subtitle="Not just advising — full academic intelligence. Syllabus, past papers, concepts, assignments, live USIS seat data."
     >
       {/* Mobile tab toggle */}
-      <div style={{ display: 'flex', gap: '2px', marginBottom: '16px' }}>
-        {(['chat', 'caps'] as const).map(t => (
-          <button key={t} onClick={() => setActiveTab(t)}
-            style={{ flex: 1, padding: '10px', background: activeTab === t ? 'var(--red)' : 'var(--ink2)', color: activeTab === t ? 'var(--paper)' : 'var(--faded)', border: 'none', fontSize: '10px', letterSpacing: '2px', textTransform: 'uppercase', fontFamily: 'IBM Plex Mono,monospace', cursor: 'crosshair' }}>
-            {t === 'chat' ? '💬 Chat' : '⚡ Capabilities'}
-          </button>
-        ))}
-      </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: '2px', background: 'var(--border)', border: '1px solid var(--border)', height: 'calc(100vh - 320px)', minHeight: '500px' }}>
-
-        {/* Left — Capabilities */}
-        <div style={{ background: 'var(--ink)', padding: '24px', overflowY: 'auto', display: activeTab === 'caps' ? 'block' : 'none' }} className="caps-panel">
-          <div style={{ fontSize: '9px', letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--red)', marginBottom: '20px', fontWeight: 700 }}>CAPABILITIES</div>
-          {CAPABILITIES.map((c, i) => (
-            <div key={i} style={{ borderBottom: '1px solid var(--border)', padding: '14px 0', display: 'flex', gap: '10px' }}>
-              <div style={{ fontSize: '16px', flexShrink: 0, marginTop: '2px' }}>{c.icon}</div>
-              <div>
-                <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--paper)', marginBottom: '3px' }}>{c.title}</div>
-                <div style={{ fontSize: '10px', color: 'var(--faded)', lineHeight: 1.8 }}>{c.desc}</div>
-              </div>
-            </div>
-          ))}
-
-          <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid var(--border)' }}>
-            <div style={{ fontSize: '9px', letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--faded)', marginBottom: '12px', fontWeight: 700 }}>TRY ASKING</div>
-            {SUGGESTIONS.map((s, i) => (
-              <button key={i} onClick={() => send(s)}
-                style={{ display: 'block', width: '100%', textAlign: 'left', background: 'none', border: '1px solid var(--border)', color: 'var(--faded)', padding: '8px 12px', fontFamily: 'IBM Plex Mono,monospace', fontSize: '10px', cursor: 'crosshair', marginBottom: '4px', transition: 'all .15s', lineHeight: 1.6 }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(232,57,14,0.4)'; (e.currentTarget as HTMLElement).style.color = 'var(--paper)' }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border)'; (e.currentTarget as HTMLElement).style.color = 'var(--faded)' }}>
-                {s}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Right — Chat */}
-        <div style={{ background: 'var(--ink2)', display: 'flex', flexDirection: 'column' }}>
-          {/* Chat top bar */}
-          <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ fontSize: '9px', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--faded)' }}>AI Engine — bracu/cmd</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '9px', color: 'var(--faded)' }}>
-                <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: 'var(--red)', display: 'inline-block', animation: 'pulse 2s infinite' }} />
-                Online
-              </div>
-              <button onClick={clear} style={{ fontSize: '9px', letterSpacing: '1.5px', textTransform: 'uppercase', background: 'none', border: '1px solid var(--border)', color: 'var(--faded)', padding: '4px 10px', fontFamily: 'IBM Plex Mono,monospace', cursor: 'crosshair', transition: 'all .15s' }}>Clear</button>
-            </div>
-          </div>
-
-          {/* Messages */}
-          <div ref={bodyRef} style={{ flex: 1, padding: '16px', display: 'flex', flexDirection: 'column', gap: '14px', overflowY: 'auto' }}>
-            {messages.map((m, i) => (
-              <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: '3px', maxWidth: '88%', alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start', alignItems: m.role === 'user' ? 'flex-end' : 'flex-start' }}>
-                <div style={{ fontSize: '9px', letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--faded)' }}>
-                  {m.role === 'user' ? 'You' : 'BRACU CMD AI'} · {m.time}
-                </div>
-                <div style={{ fontSize: '11px', lineHeight: 1.9, color: m.role === 'user' ? 'var(--paper)' : 'var(--faded)', border: `1px solid ${m.role === 'user' ? 'rgba(232,57,14,0.25)' : 'rgba(242,237,228,0.07)'}`, padding: '12px 14px', whiteSpace: 'pre-wrap', fontFamily: 'IBM Plex Mono,monospace' }}>
-                  {m.text}
-                </div>
-              </div>
-            ))}
-            {typing && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', maxWidth: '88%', alignSelf: 'flex-start' }}>
-                <div style={{ fontSize: '9px', letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--faded)' }}>BRACU CMD AI</div>
-                <div style={{ fontSize: '11px', color: 'var(--faded)', border: '1px solid rgba(242,237,228,0.07)', padding: '12px 14px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span>Thinking</span>
-                  <span style={{ display: 'inline-block', width: '6px', height: '11px', background: 'var(--paper)', animation: 'blink 1s step-end infinite', verticalAlign: 'middle' }} />
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Suggestions row */}
-          <div style={{ padding: '8px 16px', borderTop: '1px solid var(--border)', display: 'flex', gap: '6px', overflowX: 'auto', scrollbarWidth: 'none' }}>
-            {SUGGESTIONS.slice(0, 4).map((s, i) => (
-              <button key={i} onClick={() => send(s)}
-                style={{ background: 'rgba(242,237,228,0.03)', border: '1px solid var(--border)', color: 'var(--faded)', padding: '5px 10px', fontFamily: 'IBM Plex Mono,monospace', fontSize: '9px', letterSpacing: '.5px', cursor: 'crosshair', whiteSpace: 'nowrap', flexShrink: 0, transition: 'all .15s' }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(232,57,14,0.4)'; (e.currentTarget as HTMLElement).style.color = 'var(--paper)' }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border)'; (e.currentTarget as HTMLElement).style.color = 'var(--faded)' }}>
-                {s}
-              </button>
-            ))}
-          </div>
-
-          {/* Input */}
-          <div style={{ borderTop: '1px solid var(--border)', padding: '12px 16px', display: 'flex', gap: '8px', alignItems: 'center' }}>
-            <input
-              value={input}
-              onChange={e => setInput(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && !e.shiftKey && send()}
-              placeholder="Ask anything academic — topics, routine, past papers, career..."
-              style={{ flex: 1, background: 'transparent', border: 'none', borderBottom: '1px solid rgba(242,237,228,0.1)', color: 'var(--paper)', fontFamily: 'IBM Plex Mono,monospace', fontSize: '12px', padding: '7px 0', outline: 'none', letterSpacing: '.5px' }}
-            />
-            <button onClick={() => send()}
-              style={{ background: 'var(--red)', color: 'var(--paper)', border: 'none', padding: '8px 18px', fontFamily: 'IBM Plex Mono,monospace', fontSize: '10px', letterSpacing: '2px', textTransform: 'uppercase', cursor: 'crosshair', flexShrink: 0, transition: 'opacity .15s' }}
-              onMouseEnter={e => (e.currentTarget.style.opacity = '.85')}
-              onMouseLeave={e => (e.currentTarget.style.opacity = '1')}>
-              Send →
+      {isMobile && (
+        <div style={{ display: 'flex', gap: '2px', marginBottom: '16px' }}>
+          {(['chat', 'caps'] as const).map(t => (
+            <button key={t} onClick={() => setActiveTab(t)}
+              style={{ flex: 1, padding: '10px', background: activeTab === t ? 'var(--red)' : 'var(--ink2)', color: activeTab === t ? 'var(--paper)' : 'var(--faded)', border: 'none', fontSize: '10px', letterSpacing: '2px', textTransform: 'uppercase', fontFamily: 'IBM Plex Mono,monospace', cursor: 'crosshair' }}>
+              {t === 'chat' ? '💬 Chat' : '⚡ Capabilities'}
             </button>
-          </div>
+          ))}
         </div>
-      </div>
+      )}
+
+      {/* Layout */}
+      {isMobile ? (
+        // Mobile: show one at a time
+        <div style={{ border: '1px solid var(--border)' }}>
+          {activeTab === 'caps' ? <CapabilitiesPanel /> : <ChatPanel />}
+        </div>
+      ) : (
+        // Desktop: side by side
+        <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: '2px', background: 'var(--border)', border: '1px solid var(--border)', height: 'calc(100vh - 280px)', minHeight: '500px' }}>
+          <CapabilitiesPanel />
+          <ChatPanel />
+        </div>
+      )}
 
       <style>{`
-        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.2} }
         @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
-        @media(min-width:768px) { .caps-panel { display: block !important; } }
       `}</style>
     </PageLayout>
   )
