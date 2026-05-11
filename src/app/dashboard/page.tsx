@@ -2,14 +2,6 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
-const [isMobile, setIsMobile] = useState(false)
-
-useEffect(() => {
-  const check = () => setIsMobile(window.innerWidth < 768)
-  check()
-  window.addEventListener('resize', check)
-  return () => window.removeEventListener('resize', check)
-}, [])
 
 const TILES = [
   // Academic
@@ -57,6 +49,14 @@ export default function Dashboard() {
   const [timer, setTimer] = useState(30)
   const [hoveredTile, setHoveredTile] = useState<string|null>(null)
   const [showTop, setShowTop] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
 
   useEffect(() => {
     const id = localStorage.getItem('bracu_student_id')
@@ -109,7 +109,7 @@ export default function Dashboard() {
     seatBox: { background: 'var(--ink2)', border: '1px solid var(--border)', padding: '14px 20px', textAlign: 'right', minWidth: '180px' },
     searchBar: { display: 'flex', gap: '8px', margin: '28px 0 20px', alignItems: 'center' },
     searchInp: { flex: 1, background: 'var(--ink2)', border: '1px solid var(--border)', color: 'var(--paper)', fontFamily: 'IBM Plex Mono,monospace', fontSize: '12px', padding: '10px 16px', outline: 'none', letterSpacing: '.5px' },
-    grid: { display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '2px', background: 'var(--border)' } as React.CSSProperties,
+    grid: { display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '2px', background: 'transparent' } as React.CSSProperties,
     backTop: { position: 'fixed', bottom: '32px', right: '32px', background: 'var(--red)', color: 'var(--paper)', border: 'none', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', cursor: 'crosshair', zIndex: 400, transition: 'all .2s' },
   }
 
