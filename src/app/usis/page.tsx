@@ -93,7 +93,7 @@ export default function USISPage() {
         }))
       setCourses(normalized)
       setLastRefresh(Date.now())
-      setCountdown(30)
+      setCountdown(60)
     } catch {
       setError('Could not fetch live seat data.')
     } finally {
@@ -103,12 +103,12 @@ export default function USISPage() {
 
   useEffect(() => {
     fetchData()
-    const interval = setInterval(fetchData, 30000)
+    const interval = setInterval(fetchData, 60000)
     return () => clearInterval(interval)
   }, [fetchData])
 
   useEffect(() => {
-    const timer = setInterval(() => setCountdown(p => p <= 1 ? 30 : p - 1), 1000)
+    const timer = setInterval(() => setCountdown(p => p <= 1 ? 60 : p - 1), 1000)
     return () => clearInterval(timer)
   }, [lastRefresh])
 
