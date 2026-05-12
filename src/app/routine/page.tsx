@@ -138,7 +138,7 @@ export default function RoutineBuilderPage() {
     setSelected(p => p.filter(x => x.sectionId !== s.sectionId))
   }
 
-  const downloadAsImage = async (ref: React.RefObject<HTMLDivElement>, filename: string) => {
+  const downloadAsImage = async (ref: React.RefObject<HTMLDivElement | null>, filename: string) => {
     if (!ref.current) return
     setDownloading(true)
     try {
@@ -207,7 +207,7 @@ export default function RoutineBuilderPage() {
     </button>
   )
 
-  const DownloadBtn = ({ refEl, filename, label }: { refEl: React.RefObject<HTMLDivElement>, filename: string, label: string }) => (
+  const DownloadBtn = ({ refEl, filename, label }: { refEl: React.RefObject<HTMLDivElement | null>, filename: string, label: string }) => (
     <button
       onClick={() => downloadAsImage(refEl, filename)}
       disabled={downloading}
