@@ -118,7 +118,7 @@ export default function AIPage() {
       </div>
 
       {/* Main layout */}
-      <div className="ai-layout" style={{ display: 'flex', gap: '2px', border: '1px solid var(--border)', background: 'var(--border)' }}>
+      <div className="ai-layout" style={{ display: 'flex', gap: '2px', border: '1px solid var(--border)', background: 'var(--border)', height: 'calc(100vh - 280px)', minHeight: '500px' }}>
 
         {/* Capabilities panel */}
         <div className={`ai-caps${activeTab === 'caps' ? ' active' : ''}`}
@@ -147,8 +147,7 @@ export default function AIPage() {
         </div>
 
         {/* Chat panel */}
-        <div className={`ai-chat${activeTab === 'chat' ? ' active' : ''}`}
-          style={{ flex: 1, background: 'var(--ink2)', flexDirection: 'column', minWidth: 0 }}>
+        <div className={`ai-chat...`} style={{ flex: 1, background: 'var(--ink2)', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
 
           {/* Chat header */}
           <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
@@ -163,7 +162,7 @@ export default function AIPage() {
 
           {/* Messages */}
           <div className="ai-chat-inner" ref={bodyRef}
-            style={{ flex: 1, padding: '16px', display: 'flex', flexDirection: 'column', gap: '14px', overflowY: 'auto', height: '420px' }}>
+            style={{ flex: 1, padding: '16px', display: 'flex', flexDirection: 'column', gap: '14px', overflowY: 'auto', minHeight: 0 }}>
             {messages.map((m, i) => (
               <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: '3px', maxWidth: '90%', alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start', alignItems: m.role === 'user' ? 'flex-end' : 'flex-start' }}>
                 <div style={{ fontSize: '9px', letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--faded)' }}>

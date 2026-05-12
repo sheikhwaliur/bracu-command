@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
+import { supabase } from '@/lib/supabase'
 import PageLayout from '@/components/layout/PageLayout'
 
 interface Resource {
@@ -44,6 +45,28 @@ export default function ResourcesPage() {
     if (saved) setBookmarks(JSON.parse(saved))
     const rated = localStorage.getItem('bracu_rated_resources')
     if (rated) setRatedIds(JSON.parse(rated))
+  
+    // Fetch from Supabase
+    const fetchResources = async () => {
+      const { data } = await supabase
+        .from('resources')
+        .select('*')
+        .order('created_at', { ascending: false })
+      if (data && data.length > 0) {
+        setResources(p => [...p, ...data.map((r: any) => ({
+          id: r.id,
+          title: r.title,
+          type: r.type,
+          course: r.course,
+          semester: r.semester || 'Any',
+          link: r.link,
+          contributed_by: 'Anonymous',
+          ratings: r.ratings || [],
+          avg_rating: r.avg_rating || 0,
+        }))])
+      }
+    }
+    fetchResources()
   }, [])
 
   const rate = (id: string, val: number) => {
@@ -64,10 +87,21 @@ export default function ResourcesPage() {
     localStorage.setItem('bracu_bookmarks', JSON.stringify(newBm))
   }
 
-  const contribute = () => {
+  const contribute = async () => {
     if (!form.title || !form.course || !form.link) return
-    const newRes: Resource = { id: Date.now().toString(), type: form.type, title: form.title, course: form.course.toUpperCase(), semester: form.semester||'Any', link: form.link, contributed_by: 'Anonymous', ratings: [], avg_rating: 0 }
-    setResources(p => [newRes, ...p])
+    const { data, error } = await supabase
+      .from('resources')
+      .insert({
+        title: form.title,
+        type: form.type,
+        course: form.course.toUpperCase(),
+        semester: form.semester || 'Any',
+        link: form.link,
+      })
+      .select()
+      .single()
+    if (error) { console.error(error); return }
+    setResources(p => [data, ...p])
     setForm({ title: '', course: '', semester: '', link: '', type: 'drive' })
     setShowContribute(false)
   }

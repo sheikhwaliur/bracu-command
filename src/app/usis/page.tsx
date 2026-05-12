@@ -246,7 +246,7 @@ export default function USISPage() {
             <div style={{ textAlign: 'center' }}>Available</div>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', background: 'var(--border)', border: '1px solid var(--border)' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', background: 'var(--border)', border: '1px solid var(--border)', maxHeight: 'calc(100vh - 420px)', minHeight: '400px', overflowY: 'auto' }}>
             {filtered.length === 0 && (
               <div style={{ padding: '40px', textAlign: 'center', color: 'var(--faded)', fontSize: '11px', background: 'var(--ink)' }}>
                 No courses found for "{search}"
