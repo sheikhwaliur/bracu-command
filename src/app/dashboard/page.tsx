@@ -10,6 +10,7 @@ const TILES = [
   { id: 'faculty', num: '02', icon: '⭐', name: 'Faculty Intelligence', desc: 'Real BRACU faculty reviews — anonymous, verified students only.', tag: '// faculty.cmd', status: 'live', category: 'Academic' },
   { id: 'ai', num: '03', icon: '🤖', name: 'AI Engine', desc: 'Ask anything academic — topics, past papers, assignments, routines.', tag: '// ai.cmd', status: 'live', category: 'Academic' },
   { id: 'usis', num: '04', icon: '🪑', name: 'Live USIS Seats', desc: 'Real-time course seat availability. Refreshes every 30 seconds.', tag: '// usis.live', status: 'live', category: 'Academic' },
+  { id: 'routine', num: '05', icon: '🗓️', name: 'Routine Builder', desc: 'Build your routine with live USIS data. Conflict detection included.', tag: '// routine.builder', status: 'live', category: 'Academic' },
   { id: 'cgpa', num: '05', icon: '📊', name: 'CGPA Calculator', desc: 'Enter your grades and get your CGPA instantly.', tag: '// cgpa.cmd', status: 'live', category: 'Academic' },
   { id: 'credits', num: '06', icon: '🎯', name: 'Credit Tracker', desc: 'Track credits done vs remaining. Know when you graduate.', tag: '// credits.cmd', status: 'live', category: 'Academic' },
   { id: 'planner', num: '07', icon: '📋', name: 'Course Planner', desc: 'Plan all semesters until graduation. Visual roadmap.', tag: '// planner.cmd', status: 'live', category: 'Academic' },
