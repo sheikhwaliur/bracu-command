@@ -14,6 +14,12 @@ interface Course {
   courseCredit: number
   roomName: string
   courseType: string
+  labSchedules?: { startTime: string; endTime: string; day: string }[]
+  labFaculties?: string
+  labName?: string
+  labRoomName?: string
+  labCourseCode?: string
+  prerequisiteCourses?: string
   sectionSchedule?: {
     finalExamDetail?: string
     midExamDetail?: string
@@ -77,6 +83,12 @@ export default function USISPage() {
           courseCredit: Number(c.courseCredit || 0),
           roomName: c.roomName || '',
           courseType: c.courseType || '',
+          labSchedules: c.labSchedules || [],
+          labFaculties: c.labFaculties || '',
+          labName: c.labName || '',
+          labRoomName: c.labRoomName || '',
+          labCourseCode: c.labCourseCode || '',
+          prerequisiteCourses: c.prerequisiteCourses || '',
           sectionSchedule: c.sectionSchedule,
         }))
       setCourses(normalized)
@@ -100,7 +112,6 @@ export default function USISPage() {
     return () => clearInterval(timer)
   }, [lastRefresh])
 
-  // Lock body scroll when modal open on mobile
   useEffect(() => {
     if (selected && isMobile) {
       document.body.style.overflow = 'hidden'
@@ -140,13 +151,13 @@ export default function USISPage() {
     return '#5fd49a'
   }
 
-  // Detail panel content — shared between modal and desktop panel
   const DetailContent = ({ c }: { c: Course }) => (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+
       {/* Header */}
       <div>
         <div style={{ fontFamily: 'Bebas Neue,sans-serif', fontSize: '28px', color: 'var(--red)', letterSpacing: '2px', lineHeight: 1 }}>{c.courseCode}</div>
-        <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--paper)', marginTop: '4px' }}>{c.courseName}</div>
+        <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--paper)', marginTop: '4px', lineHeight: 1.3 }}>{c.courseName}</div>
       </div>
 
       {/* Faculty + Section */}
@@ -186,10 +197,10 @@ export default function USISPage() {
         </div>
       </div>
 
-      {/* Schedule */}
+      {/* Class Schedule */}
       {c.sectionSchedule?.classSchedules && c.sectionSchedule.classSchedules.length > 0 && (
         <div style={{ background: 'var(--ink)', border: '1px solid var(--border)', padding: '14px' }}>
-          <div style={{ fontSize: '9px', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--faded)', marginBottom: '10px', fontWeight: 700 }}>CLASS SCHEDULE</div>
+          <div style={{ fontSize: '9px', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--faded)', marginBottom: '10px', fontWeight: 700 }}>📚 CLASS SCHEDULE</div>
           {c.sectionSchedule.classSchedules.map((s, i) => (
             <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '7px 0', borderBottom: '1px solid rgba(242,237,228,0.05)', fontSize: '12px' }}>
               <span style={{ color: 'var(--red)', fontWeight: 700 }}>{s.day}</span>
@@ -202,18 +213,47 @@ export default function USISPage() {
         </div>
       )}
 
-      {/* Exam dates */}
+      {/* Lab Schedule */}
+      {c.labSchedules && c.labSchedules.length > 0 && (
+        <div style={{ background: 'var(--ink)', border: '1px solid rgba(100,180,255,0.25)', padding: '14px' }}>
+          <div style={{ fontSize: '9px', letterSpacing: '2px', textTransform: 'uppercase', color: '#64b4ff', marginBottom: '10px', fontWeight: 700 }}>🧪 LAB SCHEDULE</div>
+          {c.labCourseCode && (
+            <div style={{ fontSize: '10px', color: '#64b4ff', marginBottom: '8px', opacity: .8 }}>
+              {c.labCourseCode} · Faculty: {c.labFaculties || 'TBA'}
+            </div>
+          )}
+          {c.labSchedules.map((s, i) => (
+            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '7px 0', borderBottom: '1px solid rgba(100,180,255,0.1)', fontSize: '12px' }}>
+              <span style={{ color: '#64b4ff', fontWeight: 700 }}>{s.day}</span>
+              <span style={{ color: 'var(--paper)' }}>{formatTime(s.startTime)} – {formatTime(s.endTime)}</span>
+            </div>
+          ))}
+          {c.labRoomName && (
+            <div style={{ fontSize: '11px', color: 'var(--faded)', marginTop: '10px' }}>📍 {c.labRoomName}</div>
+          )}
+        </div>
+      )}
+
+      {/* Prerequisites */}
+      {c.prerequisiteCourses && (
+        <div style={{ background: 'var(--ink)', border: '1px solid var(--border)', padding: '12px 14px' }}>
+          <div style={{ fontSize: '9px', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--faded)', marginBottom: '6px', fontWeight: 700 }}>PREREQUISITES</div>
+          <div style={{ fontSize: '12px', color: 'var(--bronze)' }}>{c.prerequisiteCourses}</div>
+        </div>
+      )}
+
+      {/* Exam Dates */}
       {(c.sectionSchedule?.midExamDetail || c.sectionSchedule?.finalExamDetail) && (
         <div style={{ background: 'var(--ink)', border: '1px solid var(--border)', padding: '14px' }}>
-          <div style={{ fontSize: '9px', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--faded)', marginBottom: '10px', fontWeight: 700 }}>EXAM DATES</div>
+          <div style={{ fontSize: '9px', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--faded)', marginBottom: '10px', fontWeight: 700 }}>📅 EXAM DATES</div>
           {c.sectionSchedule?.midExamDetail && (
-            <div style={{ padding: '7px 0', borderBottom: '1px solid rgba(242,237,228,0.05)', fontSize: '11px', display: 'flex', justifyContent: 'space-between', gap: '8px' }}>
+            <div style={{ padding: '7px 0', borderBottom: '1px solid rgba(242,237,228,0.05)', fontSize: '11px', display: 'flex', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' }}>
               <span style={{ color: 'var(--bronze)', flexShrink: 0 }}>Midterm</span>
               <span style={{ color: 'var(--paper)', textAlign: 'right' }}>{c.sectionSchedule.midExamDetail}</span>
             </div>
           )}
           {c.sectionSchedule?.finalExamDetail && (
-            <div style={{ padding: '7px 0', fontSize: '11px', display: 'flex', justifyContent: 'space-between', gap: '8px' }}>
+            <div style={{ padding: '7px 0', fontSize: '11px', display: 'flex', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' }}>
               <span style={{ color: 'var(--red)', flexShrink: 0 }}>Final</span>
               <span style={{ color: 'var(--paper)', textAlign: 'right' }}>{c.sectionSchedule.finalExamDetail}</span>
             </div>
@@ -227,19 +267,19 @@ export default function USISPage() {
     <PageLayout
       eyebrow="Live USIS Seat Data"
       title="Check seats.<br/>Plan your routine."
-      subtitle="Real-time course seat availability from BRACU USIS. Tap any course for full details."
+      subtitle="Real-time course seat availability. Faculty, section, lab schedule — everything in one tap."
     >
       <style>{`
         @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
         @keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
         .usis-row { display: grid; grid-template-columns: 80px 1fr 50px; gap: 0; align-items: center; padding: 12px 14px; cursor: crosshair; }
+        .usis-hide { display: none; }
+        .usis-head { display: none; }
         @media(min-width: 640px) {
           .usis-row { grid-template-columns: 90px 1fr 70px 100px 60px 60px !important; }
           .usis-hide { display: block !important; }
-          .usis-head { display: grid !important; }
+          .usis-head { display: grid !important; grid-template-columns: 90px 1fr 70px 100px 60px 60px; gap: 0; padding: 8px 14px; }
         }
-        .usis-hide { display: none; }
-        .usis-head { display: none; grid-template-columns: 90px 1fr 70px 100px 60px 60px; gap: 0; padding: 8px 14px; }
       `}</style>
 
       {/* Live status */}
@@ -318,7 +358,6 @@ export default function USISPage() {
         </div>
       )}
 
-      {/* Desktop: split layout | Mobile: full list + modal */}
       {!loading && courses.length > 0 && (
         <div style={{ display: isMobile ? 'block' : 'grid', gridTemplateColumns: selected && !isMobile ? '1fr 320px' : '1fr', gap: '2px', background: selected && !isMobile ? 'var(--border)' : 'transparent' }}>
 
@@ -340,6 +379,7 @@ export default function USISPage() {
               {filtered.map((c, i) => {
                 const availColor = getAvailColor(c.availableSeats, c.capacity)
                 const isSelected = selected?.sectionId === c.sectionId
+                const hasLab = c.labSchedules && c.labSchedules.length > 0
                 return (
                   <div key={`${c.sectionId}-${i}`}
                     className="usis-row"
@@ -348,32 +388,27 @@ export default function USISPage() {
                     onMouseEnter={e => { if (!isSelected) (e.currentTarget as HTMLElement).style.background = 'var(--ink2)' }}
                     onMouseLeave={e => { if (!isSelected) (e.currentTarget as HTMLElement).style.background = 'var(--ink)' }}>
 
-                    {/* Code */}
                     <div>
                       <div style={{ fontFamily: 'Bebas Neue,sans-serif', fontSize: '14px', color: 'var(--red)', letterSpacing: '1px' }}>{c.courseCode}</div>
                       <div style={{ fontSize: '9px', color: 'var(--faded)' }}>{c.courseCredit}cr</div>
+                      {hasLab && <div style={{ fontSize: '7px', color: '#64b4ff', letterSpacing: '1px', marginTop: '2px' }}>🧪 LAB</div>}
                     </div>
 
-                    {/* Course + Faculty */}
                     <div style={{ minWidth: 0 }}>
                       <div style={{ fontSize: '11px', color: 'var(--paper)', marginBottom: '2px', lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.courseName}</div>
                       <div style={{ fontSize: '10px', color: 'var(--bronze)', fontWeight: 700 }}>👤 {c.faculties}</div>
                     </div>
 
-                    {/* Section — hidden on mobile */}
                     <div className="usis-hide" style={{ fontSize: '10px', color: 'var(--faded)' }}>
                       <span style={{ border: '1px solid var(--border)', padding: '2px 5px', fontSize: '9px' }}>{c.sectionName}</span>
                     </div>
 
-                    {/* Schedule — hidden on mobile */}
                     <div className="usis-hide" style={{ fontSize: '9px', color: 'var(--faded)', lineHeight: 1.7, whiteSpace: 'pre-line' }}>
                       {formatSchedule(c.sectionSchedule?.classSchedules)}
                     </div>
 
-                    {/* Capacity — hidden on mobile */}
                     <div className="usis-hide" style={{ textAlign: 'center', fontSize: '11px', color: 'var(--faded)' }}>{c.capacity}</div>
 
-                    {/* Available */}
                     <div style={{ textAlign: 'center' }}>
                       <div style={{ fontFamily: 'Bebas Neue,sans-serif', fontSize: '18px', color: availColor, letterSpacing: '1px', lineHeight: 1 }}>
                         {c.availableSeats === 0 ? 'FULL' : c.availableSeats}
@@ -404,26 +439,20 @@ export default function USISPage() {
         </div>
       )}
 
-      {/* MOBILE MODAL — bottom sheet */}
+      {/* Mobile bottom sheet */}
       {selected && isMobile && (
         <>
-          {/* Backdrop */}
-          <div
-            onClick={() => setSelected(null)}
-            style={{ position: 'fixed', inset: 0, background: 'rgba(12,11,9,0.85)', zIndex: 900, backdropFilter: 'blur(4px)' }}
-          />
-          {/* Bottom sheet */}
+          <div onClick={() => setSelected(null)}
+            style={{ position: 'fixed', inset: 0, background: 'rgba(12,11,9,0.85)', zIndex: 900, backdropFilter: 'blur(4px)' }} />
           <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'var(--ink2)', border: '1px solid var(--border)', borderBottom: 'none', zIndex: 901, maxHeight: '85vh', display: 'flex', flexDirection: 'column', animation: 'slideUp 0.25s ease-out' }}>
-            {/* Handle + close */}
-            <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
-              <div style={{ width: '40px', height: '4px', background: 'rgba(242,237,228,0.15)', borderRadius: '2px', margin: '0 auto', position: 'absolute', left: '50%', transform: 'translateX(-50%)', top: '8px' }} />
+            <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0, position: 'relative' }}>
+              <div style={{ width: '40px', height: '4px', background: 'rgba(242,237,228,0.15)', borderRadius: '2px', position: 'absolute', left: '50%', transform: 'translateX(-50%)', top: '8px' }} />
               <div style={{ fontSize: '9px', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--faded)', fontWeight: 700 }}>SECTION DETAILS</div>
               <button onClick={() => setSelected(null)}
-                style={{ background: 'none', border: '1px solid var(--border)', color: 'var(--faded)', fontSize: '14px', cursor: 'crosshair', padding: '4px 10px', fontFamily: 'IBM Plex Mono,monospace' }}>
+                style={{ background: 'none', border: '1px solid var(--border)', color: 'var(--faded)', fontSize: '12px', cursor: 'crosshair', padding: '4px 10px', fontFamily: 'IBM Plex Mono,monospace' }}>
                 ✕ Close
               </button>
             </div>
-            {/* Scrollable content */}
             <div style={{ overflowY: 'auto', padding: '16px', flex: 1 }}>
               <DetailContent c={selected} />
             </div>
@@ -431,7 +460,6 @@ export default function USISPage() {
         </>
       )}
 
-      {/* Source note */}
       <div style={{ background: 'var(--ink2)', border: '1px solid var(--border)', padding: '14px 18px', marginTop: '8px' }}>
         <p style={{ fontSize: '11px', color: 'var(--faded)', lineHeight: 1.8 }}>
           Data from <span style={{ color: 'var(--bronze)' }}>usis-cdn.eniamza.com</span> — auto-refreshes every 30s. Always verify on USIS before registering.
