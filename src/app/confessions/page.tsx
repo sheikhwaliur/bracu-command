@@ -83,7 +83,7 @@ export default function ConfessionsPage() {
   }
 
   const [err, setErr] = useState('') 
-  
+
   const submit = async () => {
     // ✅ ADD THESE 3 LINES
     const { allowed, waitSeconds } = checkRateLimit({ key: 'confession', limitMs: 300000, maxAttempts: 3 })
@@ -181,6 +181,7 @@ export default function ConfessionsPage() {
                 {CATEGORIES.filter(c => c !== 'All').map(c => <option key={c}>{c}</option>)}
               </select>
             </div>
+            {err && <div style={{ color: 'var(--red)', fontSize: '11px', marginBottom: '8px' }}>{err}</div>}
             <button onClick={submit} disabled={text.length < 10}
               style={{ background: text.length >= 10 ? 'var(--paper)' : 'var(--dim)', color: 'var(--ink)', border: 'none', padding: '12px 28px', fontFamily: 'IBM Plex Mono,monospace', fontSize: '10px', letterSpacing: '3px', textTransform: 'uppercase', fontWeight: 700, cursor: text.length >= 10 ? 'crosshair' : 'not-allowed', marginTop: '20px', transition: 'all .15s' }}>
               Post Anonymously →

@@ -197,13 +197,13 @@ export default function AIPage() {
 
           {/* Input */}
           <div style={{ borderTop: '1px solid var(--border)', padding: '12px 14px', display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
-            <input
-              value={input}
-              onChange={e => setInput(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && !e.shiftKey && send()}
-              placeholder="Ask anything academic..."
-              style={{ flex: 1, background: 'transparent', border: 'none', borderBottom: '1px solid rgba(242,237,228,0.1)', color: 'var(--paper)', fontFamily: 'IBM Plex Mono,monospace', fontSize: '12px', padding: '7px 0', outline: 'none', letterSpacing: '.5px', minWidth: 0 }}
-            />
+          <input
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && !e.shiftKey && send()}
+            placeholder="Ask anything academic..."
+            style={{ flex: 1, background: 'transparent', border: 'none', borderBottom: '1px solid rgba(242,237,228,0.1)', color: 'var(--paper)', fontFamily: 'IBM Plex Mono,monospace', fontSize: '16px', padding: '7px 0', outline: 'none', letterSpacing: '.5px', minWidth: 0, cursor: 'text', WebkitAppearance: 'none', borderRadius: 0 }}
+          />
             <button onClick={() => send()}
               style={{ background: 'var(--red)', color: 'var(--paper)', border: 'none', padding: '9px 16px', fontFamily: 'IBM Plex Mono,monospace', fontSize: '10px', letterSpacing: '2px', textTransform: 'uppercase', cursor: 'crosshair', flexShrink: 0 }}>
               Send →
