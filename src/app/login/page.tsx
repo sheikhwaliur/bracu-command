@@ -137,7 +137,7 @@ setLoading(false)
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500;700&family=Playfair+Display:ital,wght@1,700&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; cursor: crosshair; }
-        :root { --ink: #F2EDE4; --ink2: #E8E0D4; --paper: #1A0F0A; --red: #C0440E; --faded: #5C4033; --dim: #9E8E82; --bronze: #7A4E28; --border: rgba(26,15,10,0.15); }
+        :root { --ink: #0A0E1A; --ink2: #0D1221; --paper: #E8F4FF; --red: #00B4FF; --faded: #4A7A9B; --dim: #1A2A3A; --bronze: #00D4FF; --border: rgba(0,180,255,0.15); }
         html, body { height: 100%; background: var(--ink); color: var(--paper); font-family: 'IBM Plex Mono', monospace; }
         input::placeholder { color: rgba(107,95,78,0.45); font-size: 13px; letter-spacing: 1px; }
         input:focus { outline: none; }
