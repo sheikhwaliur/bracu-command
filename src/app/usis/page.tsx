@@ -462,7 +462,7 @@ export default function USISPage() {
 
       <div style={{ background: 'var(--ink2)', border: '1px solid var(--border)', padding: '14px 18px', marginTop: '8px' }}>
         <p style={{ fontSize: '11px', color: 'var(--faded)', lineHeight: 1.8 }}>
-          Data from <span style={{ color: 'var(--bronze)' }}>usis-cdn.eniamza.com</span> — auto-refreshes every 30s. Always verify on USIS before registering.
+          Data from <span style={{ color: 'var(--bronze)' }}>usis-cdn.eniamza.com</span> — auto-refreshes every 60s. Always verify on USIS before registering.
         </p>
       </div>
     </PageLayout>
