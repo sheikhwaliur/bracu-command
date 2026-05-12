@@ -114,7 +114,7 @@ export default function PageLayout({ children, title, subtitle, eyebrow }: {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500;700&family=Playfair+Display:ital,wght@1,700&display=swap');
         * { cursor: crosshair; box-sizing: border-box; margin: 0; padding: 0; }
-        :root { --ink: #F5F0E8; --ink2: #EDE8DF; --paper: #1A1208; --red: #8B3A0F; --faded: #6B5040; --dim: #C5BDB0; --bronze: #7A5C1E; --border: rgba(12,11,9,0.1); }
+        :root { --ink: #F2EDE4; --ink2: #E8E0D4; --paper: #1A0F0A; --red: #C0440E; --faded: #5C4033; --dim: #9E8E82; --bronze: #7A4E28; --border: rgba(26,15,10,0.15); }
         body { background: var(--ink); color: var(--paper); font-family: 'IBM Plex Mono', monospace; }
         @keyframes scroll { from{transform:translateX(0)} to{transform:translateX(-50%)} }
         input::placeholder { color: rgba(107,95,78,0.45); font-size: 11px; }
