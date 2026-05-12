@@ -40,14 +40,18 @@ export default function ResourcesPage() {
   const [showBookmarks, setShowBookmarks] = useState(false)
   const [ratedIds, setRatedIds] = useState<Record<string, boolean>>({})
   const [form, setForm] = useState({ title: '', course: '', semester: '', link: '', type: 'drive' as Resource['type'] })
+  const [uploadType, setUploadType] = useState<'link' | 'file'>('link')
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [uploadProgress, setUploadProgress] = useState(0)
+  const [uploading, setUploading] = useState(false)
+  const [err, setErr] = useState('')
 
   useEffect(() => {
     const saved = localStorage.getItem('bracu_bookmarks')
     if (saved) setBookmarks(JSON.parse(saved))
     const rated = localStorage.getItem('bracu_rated_resources')
     if (rated) setRatedIds(JSON.parse(rated))
-  
-    // Fetch from Supabase
+
     const fetchResources = async () => {
       const { data } = await supabase
         .from('resources')
@@ -89,27 +93,73 @@ export default function ResourcesPage() {
   }
 
   const contribute = async () => {
-    // Rate limit — max 5 resources per 10 minutes
+    setErr('')
     const { allowed, waitSeconds } = checkRateLimit({ key: 'resource', limitMs: 600000, maxAttempts: 5 })
-    if (!allowed) {
-      alert(`Too many submissions. Please wait ${waitSeconds} seconds.`)
-      return
+    if (!allowed) { setErr(`Please wait ${waitSeconds} seconds before submitting again.`); return }
+    if (!form.title || !form.course) { setErr('Title and course are required.'); return }
+
+    let fileLink = form.link
+    setUploading(true)
+
+    // Handle file upload to Supabase Storage
+    if (uploadType === 'file' && selectedFile) {
+      if (selectedFile.size > 10 * 1024 * 1024) { setErr('File too large. Max 10MB.'); setUploading(false); return }
+
+      const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation']
+      if (!allowedTypes.includes(selectedFile.type) && !selectedFile.name.match(/\.(pdf|doc|docx|ppt|pptx)$/i)) {
+        setErr('Only PDF, Word, and PowerPoint files allowed.')
+        setUploading(false)
+        return
+      }
+
+      setUploadProgress(20)
+      const fileName = `${Date.now()}_${selectedFile.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`
+
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('resources')
+        .upload(fileName, selectedFile, { cacheControl: '3600', upsert: false })
+
+      if (uploadError) {
+        setErr('Upload failed. Please try again.')
+        setUploading(false)
+        setUploadProgress(0)
+        return
+      }
+
+      setUploadProgress(80)
+      const { data: urlData } = supabase.storage.from('resources').getPublicUrl(uploadData.path)
+      fileLink = urlData.publicUrl
+      setUploadProgress(100)
     }
-    if (!form.title || !form.course || !form.link) return
+
+    if (!fileLink) { setErr('Please add a link or upload a file.'); setUploading(false); return }
+
     const { data, error } = await supabase
       .from('resources')
       .insert({
         title: form.title,
-        type: form.type,
+        type: uploadType === 'file' ? 'pdf' : form.type,
         course: form.course.toUpperCase(),
         semester: form.semester || 'Any',
-        link: form.link,
+        link: fileLink,
       })
       .select()
       .single()
-    if (error) { console.error(error); return }
-    setResources(p => [data, ...p])
+
+    if (error) { setErr('Failed to save. Please try again.'); setUploading(false); return }
+
+    setResources(p => [{
+      id: data.id, title: data.title, type: data.type,
+      course: data.course, semester: data.semester,
+      link: data.link, contributed_by: 'Anonymous',
+      ratings: [], avg_rating: 0,
+    }, ...p])
+
     setForm({ title: '', course: '', semester: '', link: '', type: 'drive' })
+    setSelectedFile(null)
+    setUploadProgress(0)
+    setUploadType('link')
+    setUploading(false)
     setShowContribute(false)
   }
 
@@ -161,7 +211,7 @@ export default function ResourcesPage() {
         </button>
       </div>
 
-      {/* Type tabs — scrollable on mobile */}
+      {/* Type tabs */}
       <div style={{ display: 'flex', gap: '2px', marginBottom: '16px', overflowX: 'auto', scrollbarWidth: 'none' }}>
         {(['all','pdf','drive','onedrive','youtube'] as const).map(t => (
           <button key={t} onClick={() => setTab(t)}
@@ -176,24 +226,86 @@ export default function ResourcesPage() {
         <div style={{ background: 'var(--ink2)', border: '1px solid var(--border)', padding: '20px', marginBottom: '16px', position: 'relative' }}>
           <div style={{ position: 'absolute', top: '-1px', left: '30px', right: '30px', height: '1px', background: 'linear-gradient(90deg,transparent,var(--red),transparent)' }} />
           <div style={{ fontSize: '9px', letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--red)', marginBottom: '14px', fontWeight: 700 }}>// Contribute Resource</div>
-          <div style={{ display: 'flex', gap: '4px', marginBottom: '14px', overflowX: 'auto', scrollbarWidth: 'none' }}>
-            {(['drive','onedrive','youtube','pdf'] as const).map(t => (
-              <button key={t} onClick={() => setForm(p=>({...p,type:t}))}
-                style={{ flexShrink: 0, padding: '7px 12px', background: form.type===t ? 'rgba(232,57,14,0.1)' : 'transparent', color: form.type===t ? 'var(--red)' : 'var(--faded)', border: `1px solid ${form.type===t ? 'rgba(232,57,14,0.4)' : 'var(--border)'}`, fontSize: '10px', fontFamily: 'IBM Plex Mono,monospace', cursor: 'crosshair' }}>
-                {TYPE_ICON[t]} {t}
-              </button>
-            ))}
+
+          {/* Upload type toggle */}
+          <div style={{ display: 'flex', gap: '4px', marginBottom: '14px' }}>
+            <button onClick={() => setUploadType('link')}
+              style={{ flex: 1, padding: '9px', background: uploadType==='link' ? 'var(--red)' : 'transparent', color: uploadType==='link' ? 'var(--paper)' : 'var(--faded)', border: `1px solid ${uploadType==='link' ? 'var(--red)' : 'var(--border)'}`, fontSize: '10px', letterSpacing: '1px', textTransform: 'uppercase', fontFamily: 'IBM Plex Mono,monospace', cursor: 'crosshair' }}>
+              🔗 Paste Link
+            </button>
+            <button onClick={() => setUploadType('file')}
+              style={{ flex: 1, padding: '9px', background: uploadType==='file' ? 'var(--red)' : 'transparent', color: uploadType==='file' ? 'var(--paper)' : 'var(--faded)', border: `1px solid ${uploadType==='file' ? 'var(--red)' : 'var(--border)'}`, fontSize: '10px', letterSpacing: '1px', textTransform: 'uppercase', fontFamily: 'IBM Plex Mono,monospace', cursor: 'crosshair' }}>
+              📄 Upload File
+            </button>
           </div>
+
+          {/* Type selector — only for link mode */}
+          {uploadType === 'link' && (
+            <div style={{ display: 'flex', gap: '4px', marginBottom: '14px', overflowX: 'auto', scrollbarWidth: 'none' }}>
+              {(['drive','onedrive','youtube','pdf'] as const).map(t => (
+                <button key={t} onClick={() => setForm(p=>({...p,type:t}))}
+                  style={{ flexShrink: 0, padding: '7px 12px', background: form.type===t ? 'rgba(232,57,14,0.1)' : 'transparent', color: form.type===t ? 'var(--red)' : 'var(--faded)', border: `1px solid ${form.type===t ? 'rgba(232,57,14,0.4)' : 'var(--border)'}`, fontSize: '10px', fontFamily: 'IBM Plex Mono,monospace', cursor: 'crosshair' }}>
+                  {TYPE_ICON[t]} {t}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Title + Course */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '10px' }}>
             <div><label style={lbl}>Title</label><input style={inp} placeholder="CSE471 Final 2024" value={form.title} onChange={e=>setForm(p=>({...p,title:e.target.value}))} /></div>
             <div><label style={lbl}>Course Code</label><input style={inp} placeholder="CSE471" value={form.course} onChange={e=>setForm(p=>({...p,course:e.target.value}))} /></div>
           </div>
+
+          {/* Semester + Link or File */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' }}>
-            <div><label style={lbl}>Semester</label><input style={inp} placeholder="Spring 2024" value={form.semester} onChange={e=>setForm(p=>({...p,semester:e.target.value}))} /></div>
-            <div><label style={lbl}>Link</label><input style={inp} placeholder="https://..." value={form.link} onChange={e=>setForm(p=>({...p,link:e.target.value}))} /></div>
+            <div>
+              <label style={lbl}>Semester</label>
+              <input style={inp} placeholder="Spring 2024" value={form.semester} onChange={e=>setForm(p=>({...p,semester:e.target.value}))} />
+            </div>
+            <div>
+              {uploadType === 'link' ? (
+                <>
+                  <label style={lbl}>Link</label>
+                  <input style={inp} placeholder="https://..." value={form.link} onChange={e=>setForm(p=>({...p,link:e.target.value}))} />
+                </>
+              ) : (
+                <>
+                  <label style={lbl}>Upload File (max 10MB)</label>
+                  <input
+                    type="file"
+                    accept=".pdf,.doc,.docx,.ppt,.pptx"
+                    onChange={e => setSelectedFile(e.target.files?.[0] || null)}
+                    style={{ ...inp, cursor: 'pointer', padding: '7px', fontSize: '11px' }}
+                  />
+                </>
+              )}
+            </div>
           </div>
-          <button onClick={contribute} style={{ width: '100%', background: 'var(--paper)', color: 'var(--ink)', border: 'none', padding: '12px', fontFamily: 'IBM Plex Mono,monospace', fontSize: '10px', letterSpacing: '3px', textTransform: 'uppercase', fontWeight: 700, cursor: 'crosshair' }}>
-            Submit →
+
+          {/* File info */}
+          {selectedFile && (
+            <div style={{ fontSize: '10px', color: '#5fd49a', marginBottom: '10px' }}>
+              ✓ {selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
+            </div>
+          )}
+
+          {/* Upload progress */}
+          {uploadProgress > 0 && uploadProgress < 100 && (
+            <div style={{ marginBottom: '10px' }}>
+              <div style={{ background: 'rgba(242,237,228,0.06)', height: '4px', marginBottom: '4px' }}>
+                <div style={{ height: '100%', background: 'var(--red)', width: `${uploadProgress}%`, transition: 'width .3s' }} />
+              </div>
+              <div style={{ fontSize: '9px', color: 'var(--faded)' }}>{uploadProgress}% uploaded...</div>
+            </div>
+          )}
+
+          {/* Error */}
+          {err && <div style={{ color: 'var(--red)', fontSize: '11px', marginBottom: '10px' }}>{err}</div>}
+
+          <button onClick={contribute} disabled={uploading}
+            style={{ width: '100%', background: uploading ? 'var(--dim)' : 'var(--paper)', color: 'var(--ink)', border: 'none', padding: '12px', fontFamily: 'IBM Plex Mono,monospace', fontSize: '10px', letterSpacing: '3px', textTransform: 'uppercase', fontWeight: 700, cursor: uploading ? 'wait' : 'crosshair', transition: 'all .2s' }}>
+            {uploading ? 'Uploading...' : 'Submit →'}
           </button>
         </div>
       )}
@@ -211,7 +323,6 @@ export default function ResourcesPage() {
             onMouseLeave={e=>(e.currentTarget.style.background='var(--ink)')}>
 
             <div className="res-row">
-              {/* Icon + Info */}
               <div style={{ fontSize: '20px', flexShrink: 0 }}>{TYPE_ICON[r.type]}</div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--paper)', marginBottom: '2px', wordBreak: 'break-word' }}>{r.title}</div>
@@ -219,9 +330,7 @@ export default function ResourcesPage() {
                 <div style={{ fontSize: '9px', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--red)', marginTop: '3px' }}>{r.course}</div>
               </div>
 
-              {/* Actions */}
               <div className="res-actions">
-                {/* Stars */}
                 <div className="res-stars">
                   {[1,2,3,4,5].map(n => (
                     <button key={n} onClick={() => rate(r.id, n)}
@@ -232,13 +341,11 @@ export default function ResourcesPage() {
                   </span>
                 </div>
 
-                {/* Bookmark */}
                 <button onClick={() => toggleBookmark(r.id)}
                   style={{ background: 'none', border: '1px solid var(--border)', padding: '5px 8px', color: bookmarks.includes(r.id) ? 'var(--bronze)' : 'var(--faded)', fontSize: '13px', cursor: 'crosshair', flexShrink: 0 }}>
                   {bookmarks.includes(r.id) ? '📌' : '🔖'}
                 </button>
 
-                {/* Open */}
                 <a href={r.link} target="_blank" rel="noopener noreferrer"
                   style={{ fontSize: '9px', letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--bronze)', textDecoration: 'none', border: '1px solid rgba(139,115,85,0.3)', padding: '5px 10px', flexShrink: 0, whiteSpace: 'nowrap' }}>
                   Open →
