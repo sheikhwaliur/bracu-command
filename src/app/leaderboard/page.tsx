@@ -39,207 +39,171 @@ const MOCK_LEADERS: Contributor[] = [
 ]
 
 export default function LeaderboardPage() {
-  const [tab, setTab] = useState<'overall' | 'resources' | 'reviews' | 'discussions'>('overall')
+  const [tab, setTab] = useState<'overall'|'resources'|'reviews'|'discussions'>('overall')
   const [dept, setDept] = useState('All')
   const [studentId, setStudentId] = useState('')
-  const [myRank, setMyRank] = useState<Contributor | null>(null)
 
   useEffect(() => {
-    const id = localStorage.getItem('bracu_student_id') || ''
+    const id = localStorage.getItem('bracu_student_id')||''
     setStudentId(id)
-    // Simulate finding student in leaderboard
-    setMyRank({
-      id: 'me', studentId: id.substring(0, 5) + '***', dept: 'CSE', semester: '8',
-      resources: 5, reviews: 3, discussions: 12, upvotes: 34, score: 156, badge: 'rising', joinedSem: 'Spring 2024'
-    })
   }, [])
 
-  const depts = ['All', 'CSE', 'EEE', 'BBA', 'PHR', 'ECO']
+  const depts = ['All','CSE','EEE','BBA','PHR','ECO']
 
   const sorted = [...MOCK_LEADERS]
-    .filter(l => dept === 'All' || l.dept === dept)
-    .sort((a, b) => {
-      if (tab === 'resources') return b.resources - a.resources
-      if (tab === 'reviews') return b.reviews - a.reviews
-      if (tab === 'discussions') return b.discussions - a.discussions
-      return b.score - a.score
+    .filter(l => dept==='All'||l.dept===dept)
+    .sort((a,b) => {
+      if (tab==='resources') return b.resources-a.resources
+      if (tab==='reviews') return b.reviews-a.reviews
+      if (tab==='discussions') return b.discussions-a.discussions
+      return b.score-a.score
     })
 
   const getVal = (l: Contributor) => {
-    if (tab === 'resources') return l.resources
-    if (tab === 'reviews') return l.reviews
-    if (tab === 'discussions') return l.discussions
+    if (tab==='resources') return l.resources
+    if (tab==='reviews') return l.reviews
+    if (tab==='discussions') return l.discussions
     return l.score
   }
 
-  const getValLabel = () => {
-    if (tab === 'resources') return 'resources'
-    if (tab === 'reviews') return 'reviews'
-    if (tab === 'discussions') return 'answers'
-    return 'points'
-  }
+  const getValLabel = () => tab==='resources'?'resources':tab==='reviews'?'reviews':tab==='discussions'?'answers':'points'
 
-  const rankMedal = (i: number) => {
-    if (i === 0) return '🥇'
-    if (i === 1) return '🥈'
-    if (i === 2) return '🥉'
-    return `#${i + 1}`
-  }
+  const rankMedal = (i: number) => i===0?'🥇':i===1?'🥈':i===2?'🥉':`#${i+1}`
 
   return (
-    <PageLayout
-      eyebrow="Leaderboard"
-      title="Top contributors.<br/>Real recognition."
-      subtitle="Students who help the most — uploading resources, writing reviews, answering questions. Ranked by impact."
-    >
-      {/* My rank card */}
-      {myRank && (
-        <div style={{ background: 'rgba(232,57,14,0.06)', border: '1px solid rgba(232,57,14,0.2)', padding: '20px 24px', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '20px', position: 'relative' }}>
-          <div style={{ position: 'absolute', top: '-1px', left: '40px', right: '40px', height: '1px', background: 'linear-gradient(90deg,transparent,var(--red),transparent)' }} />
-          <div style={{ fontSize: '9px', letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--red)', fontWeight: 700 }}>// YOUR RANK</div>
-          <div style={{ flex: 1, display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontFamily: 'Bebas Neue,sans-serif', fontSize: '32px', color: 'var(--paper)', letterSpacing: '1px' }}>{MOCK_LEADERS.length + 1}</div>
-              <div style={{ fontSize: '9px', color: 'var(--faded)', letterSpacing: '1px', textTransform: 'uppercase' }}>Rank</div>
+    <PageLayout eyebrow="Leaderboard" title="Top contributors.<br/>Real recognition." subtitle="Students who help the most — ranked by impact.">
+
+      <style>{`
+        .lb-tabs { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; margin-bottom: 14px; }
+        .lb-tabs button { flex-shrink: 0; }
+        .lb-row { display: grid; grid-template-columns: 44px 1fr 60px; gap: 8px; align-items: center; }
+        .lb-stats { display: none; }
+        @media(min-width:640px) {
+          .lb-row { grid-template-columns: 44px 1fr 70px 70px 70px 80px !important; }
+          .lb-stats { display: contents !important; }
+        }
+      `}</style>
+
+      {/* My rank */}
+      <div style={{ background: 'rgba(232,57,14,0.06)', border: '1px solid rgba(232,57,14,0.2)', padding: '16px 20px', marginBottom: '20px', position: 'relative' }}>
+        <div style={{ position: 'absolute', top: '-1px', left: '40px', right: '40px', height: '1px', background: 'linear-gradient(90deg,transparent,var(--red),transparent)' }} />
+        <div style={{ fontSize: '9px', letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--red)', fontWeight: 700, marginBottom: '12px' }}>// YOUR RANK</div>
+        <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+          {[
+            { label: 'Rank', val: MOCK_LEADERS.length+1 },
+            { label: 'Resources', val: 5 },
+            { label: 'Reviews', val: 3 },
+            { label: 'Points', val: 156 },
+          ].map((s,i)=>(
+            <div key={i} style={{ textAlign: 'center' }}>
+              <div style={{ fontFamily: 'Bebas Neue,sans-serif', fontSize: '26px', color: i===0?'var(--paper)':'var(--red)', letterSpacing: '1px', lineHeight: 1 }}>{s.val}</div>
+              <div style={{ fontSize: '9px', color: 'var(--faded)', letterSpacing: '1px', textTransform: 'uppercase', marginTop: '2px' }}>{s.label}</div>
             </div>
-            {[
-              { label: 'Resources', val: myRank.resources },
-              { label: 'Reviews', val: myRank.reviews },
-              { label: 'Answers', val: myRank.discussions },
-              { label: 'Points', val: myRank.score },
-            ].map((s, i) => (
-              <div key={i} style={{ textAlign: 'center' }}>
-                <div style={{ fontFamily: 'Bebas Neue,sans-serif', fontSize: '28px', color: 'var(--red)', letterSpacing: '1px' }}>{s.val}</div>
-                <div style={{ fontSize: '9px', color: 'var(--faded)', letterSpacing: '1px', textTransform: 'uppercase' }}>{s.label}</div>
-              </div>
-            ))}
-          </div>
-          <div style={{ fontSize: '11px', color: 'var(--faded)', letterSpacing: '.5px', textAlign: 'right' }}>
-            Contribute more to climb the ranks →<br />
-            <span style={{ fontSize: '9px', color: 'var(--dim)' }}>Upload resources, write reviews, answer questions</span>
-          </div>
-        </div>
-      )}
-
-      {/* Controls */}
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', flexWrap: 'wrap', alignItems: 'center' }}>
-        {/* Tab */}
-        <div style={{ display: 'flex', gap: '2px' }}>
-          {([['overall', '🏆 Overall'], ['resources', '📚 Resources'], ['reviews', '⭐ Reviews'], ['discussions', '💬 Answers']] as const).map(([t, l]) => (
-            <button key={t} onClick={() => setTab(t)}
-              style={{ padding: '8px 14px', background: tab === t ? 'var(--red)' : 'transparent', color: tab === t ? 'var(--paper)' : 'var(--faded)', border: `1px solid ${tab === t ? 'var(--red)' : 'var(--border)'}`, fontSize: '9px', letterSpacing: '1.5px', textTransform: 'uppercase', fontFamily: 'IBM Plex Mono,monospace', cursor: 'crosshair', transition: 'all .15s', whiteSpace: 'nowrap' }}>
-              {l}
-            </button>
-          ))}
-        </div>
-
-        {/* Dept filter */}
-        <div style={{ display: 'flex', gap: '2px', marginLeft: 'auto' }}>
-          {depts.map(d => (
-            <button key={d} onClick={() => setDept(d)}
-              style={{ padding: '7px 12px', background: dept === d ? 'var(--ink2)' : 'transparent', color: dept === d ? 'var(--paper)' : 'var(--faded)', border: `1px solid ${dept === d ? 'var(--border)' : 'transparent'}`, fontSize: '9px', letterSpacing: '1.5px', textTransform: 'uppercase', fontFamily: 'IBM Plex Mono,monospace', cursor: 'crosshair', transition: 'all .15s' }}>
-              {d}
-            </button>
           ))}
         </div>
       </div>
 
+      {/* Tab filter */}
+      <div className="lb-tabs">
+        {([['overall','🏆 Overall'],['resources','📚 Resources'],['reviews','⭐ Reviews'],['discussions','💬 Answers']] as const).map(([t,l])=>(
+          <button key={t} onClick={()=>setTab(t)}
+            style={{ padding: '8px 14px', background: tab===t?'var(--red)':'transparent', color: tab===t?'var(--paper)':'var(--faded)', border: `1px solid ${tab===t?'var(--red)':'var(--border)'}`, fontSize: '9px', letterSpacing: '1px', textTransform: 'uppercase', fontFamily: 'IBM Plex Mono,monospace', cursor: 'crosshair' }}>
+            {l}
+          </button>
+        ))}
+      </div>
+
+      {/* Dept filter */}
+      <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginBottom: '20px' }}>
+        {depts.map(d=>(
+          <button key={d} onClick={()=>setDept(d)}
+            style={{ padding: '6px 12px', background: dept===d?'var(--ink2)':'transparent', color: dept===d?'var(--paper)':'var(--faded)', border: `1px solid ${dept===d?'var(--border)':'transparent'}`, fontSize: '9px', letterSpacing: '1px', textTransform: 'uppercase', fontFamily: 'IBM Plex Mono,monospace', cursor: 'crosshair' }}>
+            {d}
+          </button>
+        ))}
+      </div>
+
       {/* Top 3 podium */}
-      {sorted.length >= 3 && (
+      {sorted.length>=3 && (
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '2px', marginBottom: '2px', background: 'var(--border)' }}>
-          {/* 2nd place */}
-          <div style={{ background: 'var(--ink2)', padding: '24px 20px', textAlign: 'center', order: 1 }}>
-            <div style={{ fontSize: '28px', marginBottom: '8px' }}>🥈</div>
-            <div style={{ fontSize: '10px', color: 'var(--bronze)', letterSpacing: '1px', marginBottom: '4px' }}>{sorted[1].dept} · Sem {sorted[1].semester}</div>
-            <div style={{ fontFamily: 'Bebas Neue,sans-serif', fontSize: '20px', color: 'var(--paper)', letterSpacing: '1px', marginBottom: '4px' }}>{sorted[1].studentId}</div>
-            <div style={{ fontSize: '10px', color: 'var(--faded)', marginBottom: '8px' }}>{BADGES[sorted[1].badge].icon} {BADGES[sorted[1].badge].label}</div>
-            <div style={{ fontFamily: 'Bebas Neue,sans-serif', fontSize: '32px', color: 'var(--bronze)', letterSpacing: '2px' }}>{getVal(sorted[1])}</div>
-            <div style={{ fontSize: '9px', color: 'var(--faded)', letterSpacing: '1px', textTransform: 'uppercase' }}>{getValLabel()}</div>
-          </div>
-
-          {/* 1st place */}
-          <div style={{ background: 'rgba(232,57,14,0.08)', border: '1px solid rgba(232,57,14,0.2)', padding: '28px 20px', textAlign: 'center', order: 2, position: 'relative' }}>
-            <div style={{ position: 'absolute', top: '-1px', left: '20px', right: '20px', height: '1px', background: 'linear-gradient(90deg,transparent,#FFD700,transparent)' }} />
-            <div style={{ fontSize: '32px', marginBottom: '8px' }}>🥇</div>
-            <div style={{ fontSize: '10px', color: '#FFD700', letterSpacing: '1px', marginBottom: '4px' }}>{sorted[0].dept} · Sem {sorted[0].semester}</div>
-            <div style={{ fontFamily: 'Bebas Neue,sans-serif', fontSize: '22px', color: 'var(--paper)', letterSpacing: '1px', marginBottom: '4px' }}>{sorted[0].studentId}</div>
-            <div style={{ fontSize: '10px', color: 'var(--faded)', marginBottom: '8px' }}>{BADGES[sorted[0].badge].icon} {BADGES[sorted[0].badge].label}</div>
-            <div style={{ fontFamily: 'Bebas Neue,sans-serif', fontSize: '40px', color: '#FFD700', letterSpacing: '2px' }}>{getVal(sorted[0])}</div>
-            <div style={{ fontSize: '9px', color: 'var(--faded)', letterSpacing: '1px', textTransform: 'uppercase' }}>{getValLabel()}</div>
-          </div>
-
-          {/* 3rd place */}
-          <div style={{ background: 'var(--ink2)', padding: '24px 20px', textAlign: 'center', order: 3 }}>
-            <div style={{ fontSize: '28px', marginBottom: '8px' }}>🥉</div>
-            <div style={{ fontSize: '10px', color: 'var(--bronze)', letterSpacing: '1px', marginBottom: '4px' }}>{sorted[2].dept} · Sem {sorted[2].semester}</div>
-            <div style={{ fontFamily: 'Bebas Neue,sans-serif', fontSize: '20px', color: 'var(--paper)', letterSpacing: '1px', marginBottom: '4px' }}>{sorted[2].studentId}</div>
-            <div style={{ fontSize: '10px', color: 'var(--faded)', marginBottom: '8px' }}>{BADGES[sorted[2].badge].icon} {BADGES[sorted[2].badge].label}</div>
-            <div style={{ fontFamily: 'Bebas Neue,sans-serif', fontSize: '32px', color: 'var(--bronze)', letterSpacing: '2px' }}>{getVal(sorted[2])}</div>
-            <div style={{ fontSize: '9px', color: 'var(--faded)', letterSpacing: '1px', textTransform: 'uppercase' }}>{getValLabel()}</div>
-          </div>
+          {[sorted[1], sorted[0], sorted[2]].map((l,i)=>{
+            const rank = i===1?0:i===0?1:2
+            const medal = rank===0?'🥇':rank===1?'🥈':'🥉'
+            const isFirst = rank===0
+            return (
+              <div key={l.id} style={{ background: isFirst?'rgba(232,57,14,0.08)':'var(--ink2)', padding: isFirst?'24px 16px':'20px 16px', textAlign: 'center', border: isFirst?'1px solid rgba(232,57,14,0.2)':'none', position: 'relative' }}>
+                {isFirst && <div style={{ position: 'absolute', top: '-1px', left: '20px', right: '20px', height: '1px', background: 'linear-gradient(90deg,transparent,#FFD700,transparent)' }} />}
+                <div style={{ fontSize: isFirst?'28px':'22px', marginBottom: '6px' }}>{medal}</div>
+                <div style={{ fontSize: '9px', color: isFirst?'#FFD700':'var(--bronze)', letterSpacing: '1px', marginBottom: '3px' }}>{l.dept} · S{l.semester}</div>
+                <div style={{ fontFamily: 'Bebas Neue,sans-serif', fontSize: isFirst?'18px':'16px', color: 'var(--paper)', letterSpacing: '1px', marginBottom: '3px' }}>{l.studentId}</div>
+                <div style={{ fontSize: '9px', color: 'var(--faded)', marginBottom: '6px' }}>{BADGES[l.badge].icon} {BADGES[l.badge].label}</div>
+                <div style={{ fontFamily: 'Bebas Neue,sans-serif', fontSize: isFirst?'32px':'26px', color: isFirst?'#FFD700':'var(--bronze)', letterSpacing: '2px' }}>{getVal(l)}</div>
+                <div style={{ fontSize: '8px', color: 'var(--faded)', letterSpacing: '1px', textTransform: 'uppercase' }}>{getValLabel()}</div>
+              </div>
+            )
+          })}
         </div>
       )}
 
-      {/* Full leaderboard table */}
+      {/* Full leaderboard */}
       <div style={{ border: '1px solid var(--border)' }}>
         {/* Header */}
-        <div style={{ display: 'grid', gridTemplateColumns: '48px 1fr 80px 80px 80px 80px 100px', gap: '0', padding: '10px 16px', background: 'var(--ink2)', borderBottom: '1px solid var(--border)' }}>
-          {['#', 'Student', 'Resources', 'Reviews', 'Answers', 'Upvotes', 'Points'].map((h, i) => (
-            <div key={i} style={{ fontSize: '9px', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--faded)', fontWeight: 700, textAlign: i > 1 ? 'center' : 'left' }}>{h}</div>
-          ))}
+        <div className="lb-row" style={{ padding: '10px 14px', background: 'var(--ink2)', borderBottom: '1px solid var(--border)' }}>
+          <div style={{ fontSize: '8px', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--faded)', fontWeight: 700 }}>#</div>
+          <div style={{ fontSize: '8px', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--faded)', fontWeight: 700 }}>Student</div>
+          <div className="lb-stats" style={{ fontSize: '8px', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--faded)', fontWeight: 700, textAlign: 'center' }}>Res</div>
+          <div className="lb-stats" style={{ fontSize: '8px', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--faded)', fontWeight: 700, textAlign: 'center' }}>Rev</div>
+          <div className="lb-stats" style={{ fontSize: '8px', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--faded)', fontWeight: 700, textAlign: 'center' }}>Ans</div>
+          <div style={{ fontSize: '8px', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--faded)', fontWeight: 700, textAlign: 'center' }}>Pts</div>
         </div>
 
-        {sorted.map((l, i) => (
-          <div key={l.id}
-            style={{ display: 'grid', gridTemplateColumns: '48px 1fr 80px 80px 80px 80px 100px', gap: '0', padding: '14px 16px', borderBottom: '1px solid var(--border)', background: 'var(--ink)', transition: 'background .15s' }}
-            onMouseEnter={e => (e.currentTarget.style.background = 'var(--ink2)')}
-            onMouseLeave={e => (e.currentTarget.style.background = 'var(--ink)')}>
-
-            {/* Rank */}
-            <div style={{ fontFamily: 'Bebas Neue,sans-serif', fontSize: i < 3 ? '20px' : '16px', color: i === 0 ? '#FFD700' : i === 1 ? 'rgba(192,192,192,0.8)' : i === 2 ? 'var(--bronze)' : 'var(--faded)', alignSelf: 'center' }}>
+        {sorted.map((l,i)=>(
+          <div key={l.id} className="lb-row"
+            style={{ padding: '12px 14px', borderBottom: '1px solid var(--border)', background: 'var(--ink)', transition: 'background .15s' }}
+            onMouseEnter={e=>(e.currentTarget.style.background='var(--ink2)')}
+            onMouseLeave={e=>(e.currentTarget.style.background='var(--ink)')}>
+            <div style={{ fontFamily: 'Bebas Neue,sans-serif', fontSize: i<3?'18px':'14px', color: i===0?'#FFD700':i===1?'rgba(192,192,192,0.8)':i===2?'var(--bronze)':'var(--faded)' }}>
               {rankMedal(i)}
             </div>
-
-            {/* Student info */}
-            <div style={{ alignSelf: 'center' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '3px' }}>
-                <span style={{ fontFamily: 'Bebas Neue,sans-serif', fontSize: '16px', color: 'var(--paper)', letterSpacing: '1px' }}>{l.studentId}</span>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px', flexWrap: 'wrap' }}>
+                <span style={{ fontFamily: 'Bebas Neue,sans-serif', fontSize: '14px', color: 'var(--paper)', letterSpacing: '1px' }}>{l.studentId}</span>
                 <span style={{ fontSize: '11px' }}>{BADGES[l.badge].icon}</span>
-                <span style={{ fontSize: '8px', letterSpacing: '1.5px', textTransform: 'uppercase', color: BADGES[l.badge].color, border: `1px solid ${BADGES[l.badge].color}`, padding: '1px 6px', opacity: 0.8 }}>{BADGES[l.badge].label}</span>
               </div>
-              <div style={{ fontSize: '10px', color: 'var(--faded)', letterSpacing: '.5px' }}>{l.dept} · Semester {l.semester} · Joined {l.joinedSem}</div>
+              <div style={{ fontSize: '9px', color: 'var(--faded)', letterSpacing: '.5px' }}>{l.dept} · Sem {l.semester}</div>
             </div>
-
-            {/* Stats */}
-            {[l.resources, l.reviews, l.discussions, l.upvotes].map((v, j) => (
-              <div key={j} style={{ textAlign: 'center', alignSelf: 'center' }}>
-                <div style={{ fontFamily: 'Bebas Neue,sans-serif', fontSize: '20px', color: tab !== 'overall' && j === ['resources', 'reviews', 'discussions'].indexOf(tab) ? 'var(--red)' : 'var(--paper)', letterSpacing: '1px' }}>{v}</div>
-              </div>
-            ))}
-
-            {/* Score */}
-            <div style={{ textAlign: 'center', alignSelf: 'center' }}>
-              <div style={{ fontFamily: 'Bebas Neue,sans-serif', fontSize: '22px', color: 'var(--red)', letterSpacing: '1px' }}>{l.score}</div>
-              <div style={{ fontSize: '8px', color: 'var(--faded)', letterSpacing: '1px', textTransform: 'uppercase' }}>pts</div>
+            <div className="lb-stats" style={{ textAlign: 'center' }}>
+              <div style={{ fontFamily: 'Bebas Neue,sans-serif', fontSize: '18px', color: 'var(--paper)', letterSpacing: '1px' }}>{l.resources}</div>
+            </div>
+            <div className="lb-stats" style={{ textAlign: 'center' }}>
+              <div style={{ fontFamily: 'Bebas Neue,sans-serif', fontSize: '18px', color: 'var(--paper)', letterSpacing: '1px' }}>{l.reviews}</div>
+            </div>
+            <div className="lb-stats" style={{ textAlign: 'center' }}>
+              <div style={{ fontFamily: 'Bebas Neue,sans-serif', fontSize: '18px', color: 'var(--paper)', letterSpacing: '1px' }}>{l.discussions}</div>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontFamily: 'Bebas Neue,sans-serif', fontSize: '20px', color: 'var(--red)', letterSpacing: '1px' }}>{l.score}</div>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Scoring system */}
-      <div style={{ marginTop: '24px', background: 'var(--ink2)', border: '1px solid var(--border)', padding: '20px 24px' }}>
-        <div style={{ fontSize: '9px', letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--faded)', marginBottom: '14px', fontWeight: 700 }}>HOW POINTS WORK</div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '16px' }}>
+      {/* Scoring */}
+      <div style={{ marginTop: '20px', background: 'var(--ink2)', border: '1px solid var(--border)', padding: '18px 20px' }}>
+        <div style={{ fontSize: '9px', letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--faded)', marginBottom: '12px', fontWeight: 700 }}>HOW POINTS WORK</div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: '8px' }}>
           {[
             { action: 'Upload resource', points: '+10 pts', icon: '📚' },
             { action: 'Resource rated 5★', points: '+5 pts', icon: '⭐' },
             { action: 'Write faculty review', points: '+8 pts', icon: '✍️' },
             { action: 'Answer a question', points: '+6 pts', icon: '💬' },
-          ].map((s, i) => (
-            <div key={i} style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '20px', marginBottom: '6px' }}>{s.icon}</div>
-              <div style={{ fontSize: '11px', color: 'var(--faded)', marginBottom: '4px', lineHeight: 1.5 }}>{s.action}</div>
-              <div style={{ fontFamily: 'Bebas Neue,sans-serif', fontSize: '18px', color: '#5fd49a', letterSpacing: '1px' }}>{s.points}</div>
+          ].map((s,i)=>(
+            <div key={i} style={{ display: 'flex', gap: '10px', padding: '10px 12px', background: 'var(--ink)', border: '1px solid var(--border)', alignItems: 'center' }}>
+              <span style={{ fontSize: '16px' }}>{s.icon}</span>
+              <div>
+                <div style={{ fontSize: '10px', color: 'var(--faded)', lineHeight: 1.5 }}>{s.action}</div>
+                <div style={{ fontFamily: 'Bebas Neue,sans-serif', fontSize: '16px', color: '#5fd49a', letterSpacing: '1px' }}>{s.points}</div>
+              </div>
             </div>
           ))}
         </div>
