@@ -333,7 +333,7 @@ export default function USISPage() {
               <div style={{ textAlign: 'center' }}>Seats</div>
             </div>
 
-            <div style={{ border: '1px solid var(--border)', maxHeight: isMobile ? 'none' : 'calc(100vh - 480px)', minHeight: '300px', overflowY: isMobile ? 'visible' : 'auto' }}>
+            <div style={{ border: '1px solid var(--border)', maxHeight: 'calc(100vh - 420px)', minHeight: '400px', overflowY: 'auto' }}>
               {filtered.length === 0 && (
                 <div style={{ padding: '32px', textAlign: 'center', color: 'var(--faded)', fontSize: '11px', background: 'var(--ink)' }}>No courses found</div>
               )}
