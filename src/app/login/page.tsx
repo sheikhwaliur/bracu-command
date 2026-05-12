@@ -19,7 +19,7 @@ export default function LoginPage() {
 
   const handleLogin = useCallback(async () => {
     // Rate limit — max 5 login attempts per 15 minutes
-    const { allowed, waitSeconds } = checkRateLimit({ key: 'login', limitMs: 900000, maxAttempts: 5 })
+    const { allowed, waitSeconds } = checkRateLimit({ key: 'login', limitMs: 300000, maxAttempts: 10 })
     if (!allowed) {
       setErr(`Too many attempts. Please wait ${waitSeconds} seconds.`)
       return
