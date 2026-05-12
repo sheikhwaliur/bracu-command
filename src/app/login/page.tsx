@@ -27,20 +27,43 @@ export default function LoginPage() {
     if (!/^\d{8}$/.test(id)) { setErr('Enter a valid 8-digit Student ID.'); return }
     if (pw.length < 6) { setErr('Password must be at least 6 characters.'); return }
     setErr(''); setLoading(true)
-    const { data: user } = await supabase.from('users').select('recovery_email').eq('student_id', id).single()
-    if (!user) { setErr('Student ID not found. Please sign up.'); setLoading(false); return }
-    const { error } = await supabase.auth.signInWithPassword({ email: user.recovery_email, password: pw })
-    if (error) { setErr('Incorrect password.'); setLoading(false); return }
-    await supabase.from('users').update({ last_login: new Date().toISOString() }).eq('student_id', id)
-    const res = await fetch('/api/auth/session', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ studentId: id }),  // ✅ fixed
-    })
-    if (res.ok) {
-      router.push('/dashboard')
-    }
+    const { data: user, error: userError } = await supabase
+  .from('users')
+  .select('recovery_email, password_hash')
+  .eq('student_id', id)
+  .single()
+
+if (userError || !user) {
+  setErr('Student ID not found. Please sign up.')
+  setLoading(false)
+  return
+}
+
+// Try Supabase auth if recovery_email exists
+if (user.recovery_email) {
+  const { error: authError } = await supabase.auth.signInWithPassword({
+    email: user.recovery_email,
+    password: pw
+  })
+  if (authError) {
+    setErr('Incorrect password.')
     setLoading(false)
+    return
+  }
+}
+
+// Set session cookie
+const res = await fetch('/api/auth/session', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ studentId: id }),
+})
+if (res.ok) {
+  router.push('/dashboard')
+} else {
+  setErr('Session error. Please try again.')
+}
+setLoading(false)
   }, [id, pw])
 
   const handleSignup = useCallback(async () => {
