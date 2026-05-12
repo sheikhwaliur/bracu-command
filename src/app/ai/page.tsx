@@ -37,7 +37,6 @@ export default function AIPage() {
   const [input, setInput] = useState('')
   const [typing, setTyping] = useState(false)
   const [activeTab, setActiveTab] = useState<'chat' | 'caps'>('chat')
-  const [model, setModel] = useState<'claude' | 'gpt'>('claude')
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -58,13 +57,13 @@ export default function AIPage() {
       const res = await fetch('/api/ai', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: msg, model }),
+        body: JSON.stringify({ message: msg }),
       })
       const data = await res.json()
       setTyping(false)
       setMessages(p => [...p, {
         role: 'ai',
-        text: data.response || 'Sorry, I could not process that.',
+        text: data.response || 'Sorry, could not process that.',
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       }])
     } catch {
@@ -91,7 +90,6 @@ export default function AIPage() {
     >
       <style>{`
         @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
-
         .ai-root {
           display: flex;
           gap: 2px;
@@ -101,9 +99,7 @@ export default function AIPage() {
           min-height: 500px;
           overflow: hidden;
         }
-
         .ai-tabs { display: none; margin-bottom: 8px; }
-
         .ai-caps {
           width: 260px;
           flex-shrink: 0;
@@ -112,13 +108,11 @@ export default function AIPage() {
           flex-direction: column;
           overflow: hidden;
         }
-
         .ai-caps-inner {
           overflow-y: auto;
           flex: 1;
           padding: 16px;
         }
-
         .ai-chat {
           flex: 1;
           background: var(--ink2);
@@ -127,7 +121,6 @@ export default function AIPage() {
           overflow: hidden;
           min-width: 0;
         }
-
         .ai-messages {
           flex: 1;
           overflow-y: auto;
@@ -136,13 +129,11 @@ export default function AIPage() {
           flex-direction: column;
           gap: 14px;
         }
-
         .ai-bottom {
           flex-shrink: 0;
           border-top: 1px solid var(--border);
           background: var(--ink2);
         }
-
         @media (max-width: 767px) {
           .ai-tabs { display: flex !important; gap: 2px; }
           .ai-root { height: calc(100vh - 280px); min-height: 400px; }
@@ -179,7 +170,6 @@ export default function AIPage() {
                 </div>
               </div>
             ))}
-
             <div style={{ marginTop: '16px', paddingTop: '14px', borderTop: '1px solid var(--border)' }}>
               <div style={{ fontSize: '9px', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--faded)', marginBottom: '10px', fontWeight: 700 }}>TRY ASKING</div>
               {SUGGESTIONS.map((s, i) => (
@@ -203,19 +193,10 @@ export default function AIPage() {
               <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--red)', display: 'inline-block' }} />
               <span style={{ fontSize: '9px', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--faded)' }}>AI Engine — bracu/cmd</span>
             </div>
-            <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-              {/* Model selector */}
-              {(['claude', 'gpt'] as const).map(m => (
-                <button key={m} onClick={() => setModel(m)}
-                  style={{ padding: '3px 10px', background: model === m ? 'var(--red)' : 'transparent', color: model === m ? 'var(--paper)' : 'var(--faded)', border: `1px solid ${model === m ? 'var(--red)' : 'var(--border)'}`, fontSize: '8px', letterSpacing: '1px', textTransform: 'uppercase', fontFamily: 'IBM Plex Mono,monospace', cursor: 'crosshair' }}>
-                  {m === 'claude' ? '⚡ Claude' : '🤖 GPT'}
-                </button>
-              ))}
-              <button onClick={clear}
-                style={{ fontSize: '9px', letterSpacing: '1.5px', textTransform: 'uppercase', background: 'none', border: '1px solid var(--border)', color: 'var(--faded)', padding: '3px 10px', fontFamily: 'IBM Plex Mono,monospace', cursor: 'crosshair' }}>
-                Clear
-              </button>
-            </div>
+            <button onClick={clear}
+              style={{ fontSize: '9px', letterSpacing: '1.5px', textTransform: 'uppercase', background: 'none', border: '1px solid var(--border)', color: 'var(--faded)', padding: '3px 10px', fontFamily: 'IBM Plex Mono,monospace', cursor: 'crosshair' }}>
+              Clear
+            </button>
           </div>
 
           {/* Messages — scrollable */}
@@ -241,7 +222,7 @@ export default function AIPage() {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Bottom — fixed at bottom of chat panel */}
+          {/* Bottom — fixed at bottom */}
           <div className="ai-bottom">
             {/* Suggestion chips */}
             <div style={{ padding: '8px 12px', borderBottom: '1px solid var(--border)', display: 'flex', gap: '6px', overflowX: 'auto', scrollbarWidth: 'none' }}>
@@ -271,6 +252,7 @@ export default function AIPage() {
               </button>
             </div>
           </div>
+
         </div>
       </div>
     </PageLayout>
