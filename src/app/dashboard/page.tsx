@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
+import { getStudentId } from '@/lib/session'
 import { useRouter } from 'next/navigation'
 
 
@@ -59,7 +60,7 @@ export default function Dashboard() {
   }, [])
 
   useEffect(() => {
-    const id = localStorage.getItem('bracu_student_id')
+    const id = getStudentId()
     if (!id) { router.push('/login'); return }
     setStudentId(id)
   }, [])

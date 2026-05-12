@@ -25,10 +25,16 @@ export default function LoginPage() {
     const { error } = await supabase.auth.signInWithPassword({ email: user.recovery_email, password: pw })
     if (error) { setErr('Incorrect password.'); setLoading(false); return }
     await supabase.from('users').update({ last_login: new Date().toISOString() }).eq('student_id', id)
-    localStorage.setItem('bracu_student_id', id)
-    router.push('/dashboard')
+    const res = await fetch('/api/auth/session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ studentId: id }),  // ✅ fixed
+    })
+    if (res.ok) {
+      router.push('/dashboard')
+    }
     setLoading(false)
-  }, [id, pw, router])
+  }, [id, pw])
 
   const handleSignup = useCallback(async () => {
     if (!/^\d{8}$/.test(id)) { setErr('Enter a valid 8-digit Student ID.'); return }

@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
+import { getStudentId } from '@/lib/session'
 import { useRouter } from 'next/navigation'
 
 const STRIP_ITEMS = ['Academic AI', 'Student ID Auth', 'Faculty Reviews', 'Live USIS Data', 'CGPA Calculator', 'AI Resume', 'Mock Exams', 'Study Groups', 'Course Ratings', 'Campus Map']
@@ -13,12 +14,9 @@ export default function PageLayout({ children, title, subtitle, eyebrow }: {
   const router = useRouter()
   const [studentId, setStudentId] = useState('')
   const [showTop, setShowTop] = useState(false)
-  const [search, setSearch] = useState('')
 
   useEffect(() => {
-    const id = localStorage.getItem('bracu_student_id')
-    if (!id) { router.push('/login'); return }
-    setStudentId(id)
+    setStudentId(getStudentId())
   }, [])
 
   useEffect(() => {
@@ -39,9 +37,22 @@ export default function PageLayout({ children, title, subtitle, eyebrow }: {
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '10px', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--faded)' }}>
             <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--red)', display: 'inline-block' }} />Online
           </div>
-          <div style={{ fontSize: '10px', color: 'var(--faded)', border: '1px solid var(--border)', padding: '5px 12px', letterSpacing: '1px' }}>ID: {studentId}</div>
-          <button onClick={() => router.push('/dashboard')} style={{ fontSize: '10px', letterSpacing: '2px', textTransform: 'uppercase', background: 'none', border: 'none', color: 'var(--faded)', cursor: 'crosshair', fontFamily: 'IBM Plex Mono,monospace' }}>← Dashboard</button>
-          <button onClick={() => { localStorage.removeItem('bracu_student_id'); router.push('/login') }} style={{ fontSize: '10px', letterSpacing: '2px', textTransform: 'uppercase', background: 'none', border: 'none', color: 'var(--faded)', cursor: 'crosshair', fontFamily: 'IBM Plex Mono,monospace' }}>Sign Out</button>
+          <div style={{ fontSize: '10px', color: 'var(--faded)', border: '1px solid var(--border)', padding: '5px 12px', letterSpacing: '1px' }}>
+            ID: {studentId || '—'}
+          </div>
+          <button
+            onClick={() => router.push('/dashboard')}
+            style={{ fontSize: '10px', letterSpacing: '2px', textTransform: 'uppercase', background: 'none', border: 'none', color: 'var(--faded)', cursor: 'crosshair', fontFamily: 'IBM Plex Mono,monospace' }}>
+            ← Dashboard
+          </button>
+          <button
+            onClick={async () => {
+              await fetch('/api/auth/session', { method: 'DELETE' })
+              router.push('/login')
+            }}
+            style={{ fontSize: '10px', letterSpacing: '2px', textTransform: 'uppercase', background: 'none', border: 'none', color: 'var(--faded)', cursor: 'crosshair', fontFamily: 'IBM Plex Mono,monospace' }}>
+            Sign Out
+          </button>
         </div>
       </nav>
 
@@ -64,10 +75,13 @@ export default function PageLayout({ children, title, subtitle, eyebrow }: {
             {eyebrow}
           </div>
         )}
-        <div style={{ fontFamily: 'Playfair Display,serif', fontStyle: 'italic', fontSize: 'clamp(28px,3.5vw,48px)', fontWeight: 700, color: 'var(--paper)', lineHeight: 1.1, marginBottom: '10px' }}
+        <div
+          style={{ fontFamily: 'Playfair Display,serif', fontStyle: 'italic', fontSize: 'clamp(28px,3.5vw,48px)', fontWeight: 700, color: 'var(--paper)', lineHeight: 1.1, marginBottom: '10px' }}
           dangerouslySetInnerHTML={{ __html: title }}
         />
-        {subtitle && <p style={{ fontSize: '12px', color: 'var(--faded)', lineHeight: 1.9, maxWidth: '520px' }}>{subtitle}</p>}
+        {subtitle && (
+          <p style={{ fontSize: '12px', color: 'var(--faded)', lineHeight: 1.9, maxWidth: '520px' }}>{subtitle}</p>
+        )}
       </div>
 
       {/* Content */}
@@ -78,8 +92,12 @@ export default function PageLayout({ children, title, subtitle, eyebrow }: {
       {/* Footer */}
       <footer style={{ borderTop: '1px solid var(--border)', padding: '22px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', maxWidth: '1200px', margin: '0 auto' }}>
         <div>
-          <div style={{ fontFamily: 'Bebas Neue,sans-serif', fontSize: '17px', letterSpacing: '3px' }}>BRACU<span style={{ color: 'var(--red)' }}>/</span>CMD</div>
-          <div style={{ fontSize: '9px', letterSpacing: '1.5px', color: 'var(--dim)', marginTop: '4px', textTransform: 'uppercase' }}>Academic Intelligence System — v2.0</div>
+          <div style={{ fontFamily: 'Bebas Neue,sans-serif', fontSize: '17px', letterSpacing: '3px' }}>
+            BRACU<span style={{ color: 'var(--red)' }}>/</span>CMD
+          </div>
+          <div style={{ fontSize: '9px', letterSpacing: '1.5px', color: 'var(--dim)', marginTop: '4px', textTransform: 'uppercase' }}>
+            Academic Intelligence System — v2.0
+          </div>
         </div>
         <div style={{ fontSize: '9px', color: 'var(--faded)', letterSpacing: '1px', textAlign: 'right', lineHeight: 1.8 }}>
           Built by a CSE student.<br />For every student that follows.

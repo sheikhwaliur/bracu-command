@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
+import { getStudentId } from '@/lib/session'
 import PageLayout from '@/components/layout/PageLayout'
 
 interface Contributor {
@@ -44,7 +45,7 @@ export default function LeaderboardPage() {
   const [studentId, setStudentId] = useState('')
 
   useEffect(() => {
-    const id = localStorage.getItem('bracu_student_id')||''
+    const id = getStudentId()
     setStudentId(id)
   }, [])
 
