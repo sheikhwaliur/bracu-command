@@ -256,7 +256,7 @@ export default function Dashboard() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500;700&family=Playfair+Display:ital,wght@1,700&display=swap');
         * { cursor: crosshair; box-sizing: border-box; margin: 0; padding: 0; }
-        :root { --ink: #0C0B09; --ink2: #111009; --paper: #F2EDE4; --red: #E8390E; --faded: #6B5F4E; --dim: #2E2A23; --border: rgba(242,237,228,0.09); }
+        :root { --ink: #F2EDE4; --ink2: #E8E0D4; --paper: #1A0F0A; --red: #C0440E; --faded: #5C4033; --dim: #9E8E82; --bronze: #7A4E28; --border: rgba(26,15,10,0.15); }
         body { background: var(--ink); color: var(--paper); font-family: 'IBM Plex Mono', monospace; }
         @keyframes scroll { from{transform:translateX(0)} to{transform:translateX(-50%)} }
         @media(max-width:900px) {

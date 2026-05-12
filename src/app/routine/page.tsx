@@ -144,7 +144,7 @@ export default function RoutineBuilderPage() {
     try {
       const html2canvas = (await import('html2canvas')).default
       const canvas = await html2canvas(ref.current, {
-        backgroundColor: '#0C0B09',
+        backgroundColor: '#F2EDE4',
         scale: 2,
         useCORS: true,
         logging: false,
@@ -225,9 +225,9 @@ export default function RoutineBuilderPage() {
       <style>{`
         @keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
         .tt-table { width: 100%; border-collapse: collapse; min-width: 500px; }
-        .tt-table th { background: #111009; padding: 8px 6px; text-align: center; font-size: 9px; letter-spacing: 1px; text-transform: uppercase; color: #6B5F4E; border: 1px solid rgba(242,237,228,0.09); font-family: IBM Plex Mono, monospace; }
-        .tt-table td { border: 1px solid rgba(242,237,228,0.09); padding: 4px; vertical-align: top; min-width: 60px; height: 48px; background: #0C0B09; }
-        .exam-card { background: #0C0B09; border: 1px solid rgba(242,237,228,0.09); padding: 14px 16px; margin-bottom: 2px; }
+        .tt-table th { background: #E8E0D4; padding: 8px 6px; text-align: center; font-size: 9px; letter-spacing: 1px; text-transform: uppercase; color: #6B5F4E; border: 1px solid rgba(242,237,228,0.09); font-family: IBM Plex Mono, monospace; }
+        .tt-table td { border: 1px solid rgba(242,237,228,0.09); padding: 4px; vertical-align: top; min-width: 60px; height: 48px; background: #F2EDE4; }
+        .exam-card { background: #F2EDE4; border: 1px solid rgba(242,237,228,0.09); padding: 14px 16px; margin-bottom: 2px; }
       `}</style>
 
       {/* Tabs */}
@@ -342,7 +342,7 @@ export default function RoutineBuilderPage() {
           ) : (
             <>
               {/* Timetable — this gets downloaded */}
-              <div ref={timetableRef} style={{ background: '#0C0B09', padding: '16px', border: '1px solid rgba(242,237,228,0.09)' }}>
+              <div ref={timetableRef} style={{ background: '#F2EDE4', padding: '16px', border: '1px solid rgba(242,237,228,0.09)' }}>
                 {/* Header inside download area */}
                 <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div style={{ fontFamily: 'Bebas Neue,sans-serif', fontSize: '18px', color: '#E8390E', letterSpacing: '3px' }}>BRACU/CMD — CLASS TIMETABLE</div>
@@ -367,7 +367,7 @@ export default function RoutineBuilderPage() {
                         const [start, end] = timeKey.split('-')
                         return (
                           <tr key={timeKey}>
-                            <td style={{ background: '#111009', padding: '6px 4px', textAlign: 'center', fontSize: '9px', color: '#6B5F4E', fontFamily: 'IBM Plex Mono,monospace', whiteSpace: 'nowrap' }}>
+                            <td style={{ background: '#E8E0D4', padding: '6px 4px', textAlign: 'center', fontSize: '9px', color: '#6B5F4E', fontFamily: 'IBM Plex Mono,monospace', whiteSpace: 'nowrap' }}>
                               {formatTime(start)}<br />–{formatTime(end)}
                             </td>
                             {DAYS.map(day => {
@@ -442,7 +442,7 @@ export default function RoutineBuilderPage() {
             </div>
           ) : (
             /* Exam schedule — this gets downloaded */
-            <div ref={examRef} style={{ background: '#0C0B09', padding: '16px', border: '1px solid rgba(242,237,228,0.09)' }}>
+            <div ref={examRef} style={{ background: '#F2EDE4', padding: '16px', border: '1px solid rgba(242,237,228,0.09)' }}>
               {/* Header inside download area */}
               <div style={{ marginBottom: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ fontFamily: 'Bebas Neue,sans-serif', fontSize: '18px', color: '#E8390E', letterSpacing: '3px' }}>BRACU/CMD — EXAM SCHEDULE</div>
