@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
+import { supabase } from '@/lib/supabase'
 import PageLayout from '@/components/layout/PageLayout'
 
 interface Review {
@@ -57,22 +58,44 @@ export default function FacultyPage() {
   useEffect(() => {
     const rated = localStorage.getItem('bracu_rated_faculty')
     if (rated) setRatedIds(JSON.parse(rated))
+  
+    const fetchReviews = async () => {
+      const { data } = await supabase
+        .from('faculty_reviews')
+        .select('*')
+        .order('created_at', { ascending: false })
+      if (data && data.length > 0) {
+        setFaculty(p => p.map(f => {
+          const fReviews = data.filter((r: any) => r.faculty_id === f.id.toString())
+          if (fReviews.length === 0) return f
+          const newReviews = [...f.reviews, ...fReviews.map((r: any) => ({
+            id: r.id, text: r.text, rating: r.rating, date: new Date(r.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+          }))]
+          const newScore = parseFloat((newReviews.reduce((a, r) => a + r.rating, 0) / newReviews.length).toFixed(1))
+          return { ...f, reviews: newReviews, score: newScore }
+        }))
+      }
+    }
+    fetchReviews()
   }, [])
 
-  const submitReview = (f: Faculty) => {
+  const submitReview = async (f: Faculty) => {
     if (!reviewText.trim()) return
-    const newReview: Review = {
-      id: Date.now().toString(),
-      text: reviewText,
+    const newReview = {
+      faculty_id: f.id.toString(),
+      faculty_name: f.name,
       rating: reviewRating,
-      date: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+      text: reviewText,
+      semester: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
     }
+    const { data, error } = await supabase.from('faculty_reviews').insert(newReview).select().single()
+    if (error) { console.error(error); return }
     const newRated = { ...ratedIds, [f.id]: true }
     setRatedIds(newRated)
     localStorage.setItem('bracu_rated_faculty', JSON.stringify(newRated))
     setFaculty(p => p.map(fac => {
       if (fac.id !== f.id) return fac
-      const newReviews = [...fac.reviews, newReview]
+      const newReviews = [...fac.reviews, { id: data.id, text: data.text, rating: data.rating, date: data.semester }]
       const newScore = parseFloat((newReviews.reduce((a, r) => a + r.rating, 0) / newReviews.length).toFixed(1))
       return { ...fac, reviews: newReviews, score: newScore }
     }))

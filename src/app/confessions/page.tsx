@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
+import { supabase } from '@/lib/supabase'
 import PageLayout from '@/components/layout/PageLayout'
 
 interface Confession {
@@ -49,26 +50,49 @@ export default function ConfessionsPage() {
   useEffect(() => {
     const saved = localStorage.getItem('bracu_liked_confessions')
     if (saved) setLikedIds(JSON.parse(saved))
+  
+    const fetchConfessions = async () => {
+      const { data } = await supabase
+        .from('confessions')
+        .select('*')
+        .order('created_at', { ascending: false })
+      if (data && data.length > 0) {
+        setConfessions(p => [
+          ...data.map((c: any) => ({
+            id: c.id,
+            text: c.text,
+            category: c.category,
+            likes: c.likes || 0,
+            time: new Date(c.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+          })),
+          ...p,
+        ])
+      }
+    }
+    fetchConfessions()
   }, [])
 
-  const like = (id: string) => {
+  const like = async (id: string) => {
     if (likedIds[id]) return
     const newLiked = { ...likedIds, [id]: true }
     setLikedIds(newLiked)
     localStorage.setItem('bracu_liked_confessions', JSON.stringify(newLiked))
     setConfessions(p => p.map(c => c.id === id ? { ...c, likes: c.likes + 1 } : c))
+    await supabase.from('confessions').update({ likes: (confessions.find(c => c.id === id)?.likes || 0) + 1 }).eq('id', id)
   }
 
-  const submit = () => {
+  const submit = async () => {
     if (!text.trim() || text.length < 10) return
-    const newC: Confession = {
-      id: Date.now().toString(),
-      text: text.trim(),
-      category: cat,
-      likes: 0,
-      time: 'Just now',
-    }
-    setConfessions(p => [newC, ...p])
+    const { data, error } = await supabase
+      .from('confessions')
+      .insert({ text: text.trim(), category: cat, likes: 0 })
+      .select()
+      .single()
+    if (error) { console.error(error); return }
+    setConfessions(p => [{
+      id: data.id, text: data.text, category: data.category,
+      likes: 0, time: 'Just now',
+    }, ...p])
     setText('')
     setCharCount(0)
     setShowForm(false)

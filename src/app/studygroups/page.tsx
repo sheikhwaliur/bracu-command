@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
+import { supabase } from '@/lib/supabase'
 import PageLayout from '@/components/layout/PageLayout'
 
 interface StudyGroup {
@@ -48,6 +49,27 @@ export default function StudyGroupsPage() {
   useEffect(() => {
     const saved = localStorage.getItem('bracu_joined_groups')
     if (saved) setJoinedIds(JSON.parse(saved))
+  
+    const fetchGroups = async () => {
+      const { data } = await supabase
+        .from('study_groups')
+        .select('*')
+        .order('created_at', { ascending: false })
+      if (data && data.length > 0) {
+        setGroups(p => [
+          ...data.map((g: any) => ({
+            id: g.id, course: g.course, title: g.title,
+            description: g.description, members: g.members,
+            maxMembers: g.max_members, meetingType: g.meeting_type,
+            meetingTime: g.meeting_time, location: g.location,
+            contact: g.contact, tags: g.tags || [],
+            createdBy: 'Student',
+          })),
+          ...p,
+        ])
+      }
+    }
+    fetchGroups()
   }, [])
 
   const joinGroup = (id: string) => {
@@ -66,24 +88,31 @@ export default function StudyGroupsPage() {
     setGroups(p => p.map(g => g.id === id ? { ...g, members: Math.max(0, g.members - 1) } : g))
   }
 
-  const createGroup = () => {
+  const createGroup = async () => {
     if (!form.course || !form.title || !form.description) return
-    const newGroup: StudyGroup = {
-      id: Date.now().toString(),
+    const { data, error } = await supabase.from('study_groups').insert({
       course: form.course.toUpperCase(),
       title: form.title,
       description: form.description,
-      members: 1,
-      maxMembers: form.maxMembers,
-      meetingType: form.meetingType,
-      meetingTime: form.meetingTime,
+      meeting_type: form.meetingType,
+      meeting_time: form.meetingTime,
       location: form.location,
       contact: form.contact,
       tags: form.tags.split(',').map(t => t.trim()).filter(Boolean),
+      max_members: form.maxMembers,
+      members: 1,
+    }).select().single()
+    if (error) { console.error(error); return }
+    const newGroup = {
+      id: data.id, course: data.course, title: data.title,
+      description: data.description, members: 1,
+      maxMembers: data.max_members, meetingType: data.meeting_type,
+      meetingTime: data.meeting_time, location: data.location,
+      contact: data.contact, tags: data.tags || [],
       createdBy: 'You',
     }
     setGroups(p => [newGroup, ...p])
-    const newJoined = { ...joinedIds, [newGroup.id]: true }
+    const newJoined = { ...joinedIds, [data.id]: true }
     setJoinedIds(newJoined)
     localStorage.setItem('bracu_joined_groups', JSON.stringify(newJoined))
     setForm({ course: '', title: '', description: '', maxMembers: 8, meetingType: 'hybrid', meetingTime: '', location: '', contact: '', tags: '' })
