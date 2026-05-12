@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
+import { checkRateLimit } from '@/lib/rateLimit'
 import PageLayout from '@/components/layout/PageLayout'
 
 interface StudyGroup {
@@ -89,6 +90,12 @@ export default function StudyGroupsPage() {
   }
 
   const createGroup = async () => {
+    // Rate limit — max 2 groups per 10 minutes
+    const { allowed, waitSeconds } = checkRateLimit({ key: 'studygroup', limitMs: 600000, maxAttempts: 2 })
+    if (!allowed) {
+      alert(`Please wait ${waitSeconds} seconds before creating another group.`)
+      return
+    }
     if (!form.course || !form.title || !form.description) return
     const { data, error } = await supabase.from('study_groups').insert({
       course: form.course.toUpperCase(),

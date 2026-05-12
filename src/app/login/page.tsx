@@ -1,6 +1,7 @@
 'use client'
 import { useState, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
+import { checkRateLimit } from '@/lib/rateLimit'
 import { useRouter } from 'next/navigation'
 
 export default function LoginPage() {
@@ -17,6 +18,12 @@ export default function LoginPage() {
   const [btnHover, setBtnHover] = useState(false)
 
   const handleLogin = useCallback(async () => {
+    // Rate limit — max 5 login attempts per 15 minutes
+    const { allowed, waitSeconds } = checkRateLimit({ key: 'login', limitMs: 900000, maxAttempts: 5 })
+    if (!allowed) {
+      setErr(`Too many attempts. Please wait ${waitSeconds} seconds.`)
+      return
+    }
     if (!/^\d{8}$/.test(id)) { setErr('Enter a valid 8-digit Student ID.'); return }
     if (pw.length < 6) { setErr('Password must be at least 6 characters.'); return }
     setErr(''); setLoading(true)

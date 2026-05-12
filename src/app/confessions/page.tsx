@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
+import { checkRateLimit } from '@/lib/rateLimit'
 import { supabase } from '@/lib/supabase'
 import PageLayout from '@/components/layout/PageLayout'
 
@@ -81,7 +82,14 @@ export default function ConfessionsPage() {
     await supabase.from('confessions').update({ likes: (confessions.find(c => c.id === id)?.likes || 0) + 1 }).eq('id', id)
   }
 
+  const [err, setErr] = useState('') 
+  
   const submit = async () => {
+    // ✅ ADD THESE 3 LINES
+    const { allowed, waitSeconds } = checkRateLimit({ key: 'confession', limitMs: 300000, maxAttempts: 3 })
+    if (!allowed) { setErr(`Please wait ${waitSeconds} seconds before posting again.`); return }
+  
+    // YOUR EXISTING CODE UNCHANGED BELOW
     if (!text.trim() || text.length < 10) return
     const { data, error } = await supabase
       .from('confessions')

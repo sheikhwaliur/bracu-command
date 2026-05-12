@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
+import { checkRateLimit } from '@/lib/rateLimit'
 import { supabase } from '@/lib/supabase'
 import PageLayout from '@/components/layout/PageLayout'
 
@@ -88,6 +89,12 @@ export default function ResourcesPage() {
   }
 
   const contribute = async () => {
+    // Rate limit — max 5 resources per 10 minutes
+    const { allowed, waitSeconds } = checkRateLimit({ key: 'resource', limitMs: 600000, maxAttempts: 5 })
+    if (!allowed) {
+      alert(`Too many submissions. Please wait ${waitSeconds} seconds.`)
+      return
+    }
     if (!form.title || !form.course || !form.link) return
     const { data, error } = await supabase
       .from('resources')
