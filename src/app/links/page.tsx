@@ -4,7 +4,7 @@ import PageLayout from '@/components/layout/PageLayout'
 
 const LINKS = [
   // Academic
-  { category: 'Academic', name: 'USIS', desc: 'Course registration, grade sheet, seat availability', url: 'https://usis.bracu.ac.bd', icon: '🎓', tag: 'Must Have' },
+  { category: 'Academic', name: 'USIS', desc: 'Course registration, grade sheet, seat availability', url: 'https://connect.bracu.ac.bd', icon: '🎓', tag: 'Must Have' },
   { category: 'Academic', name: 'BracU Blended', desc: 'LMS — assignments, slides, announcements', url: 'https://elearn.bracu.ac.bd', icon: '📚', tag: 'Must Have' },
   { category: 'Academic', name: 'G Suite / BRACU Mail', desc: 'Official BRACU student email (@g.bracu.ac.bd)', url: 'https://mail.google.com', icon: '📧', tag: 'Must Have' },
   { category: 'Academic', name: 'BRACU Library', desc: 'Library catalog, e-resources, IEEE, Springer', url: 'https://library.bracu.ac.bd', icon: '📖', tag: '' },
@@ -12,9 +12,9 @@ const LINKS = [
   { category: 'Academic', name: 'Google Scholar', desc: 'Academic papers, citations, research', url: 'https://scholar.google.com', icon: '🔬', tag: '' },
 
   // Registration & Admin
-  { category: 'Registration & Admin', name: 'Pre-Registration', desc: 'Advance course registration before semester', url: 'https://usis.bracu.ac.bd', icon: '📝', tag: '' },
-  { category: 'Registration & Admin', name: 'Advising Slip', desc: 'Download advising slip for registration', url: 'https://usis.bracu.ac.bd', icon: '🗒️', tag: '' },
-  { category: 'Registration & Admin', name: 'Tuition Fee Payment', desc: 'Pay semester fees online via bKash or bank', url: 'https://usis.bracu.ac.bd', icon: '💳', tag: '' },
+  { category: 'Registration & Admin', name: 'Pre-Registration', desc: 'Advance course registration before semester', url: 'https://connect.bracu.ac.bd', icon: '📝', tag: '' },
+  { category: 'Registration & Admin', name: 'Advising Slip', desc: 'Download advising slip for registration', url: 'https://connect.bracu.ac.bd', icon: '🗒️', tag: '' },
+  { category: 'Registration & Admin', name: 'Tuition Fee Payment', desc: 'Pay semester fees online via bKash or bank', url: 'https://connect.bracu.ac.bd', icon: '💳', tag: '' },
   { category: 'Registration & Admin', name: 'Exam Controller', desc: 'Exam schedule, hall ticket, result', url: 'https://bracu.ac.bd/academics/office-of-the-controller-of-examinations', icon: '📋', tag: '' },
 
   // Tools & Portals
