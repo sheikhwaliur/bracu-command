@@ -162,7 +162,7 @@ export default function USISPage() {
 
       {/* Faculty + Section */}
       <div style={{ background: 'var(--ink)', border: '1px solid var(--border)', padding: '14px' }}>
-        <div style={{ fontSize: '9px', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--faded)', marginBottom: '10px', fontWeight: 700 }}>FACULTY & SECTION</div>
+        <div style={{ fontSize: '9px', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--paper)', marginBottom: '10px', fontWeight: 700 }}>FACULTY & SECTION</div>
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
           <div style={{ fontSize: '28px' }}>👤</div>
           <div>
