@@ -79,8 +79,7 @@ export default function RoutineBuilderPage() {
   const [previewModal, setPreviewModal] = useState<Section | null>(null)
   const [downloading, setDownloading] = useState(false)
 
-  const timetableRef = useRef<HTMLDivElement>(null)
-  const examRef = useRef<HTMLDivElement>(null)
+  const combinedRef = useRef<HTMLDivElement | null>(null)
 
   const fetchData = useCallback(async () => {
     try {
@@ -138,19 +137,21 @@ export default function RoutineBuilderPage() {
     setSelected(p => p.filter(x => x.sectionId !== s.sectionId))
   }
 
-  const downloadAsImage = async (ref: React.RefObject<HTMLDivElement | null>, filename: string) => {
-    if (!ref.current) return
+  const downloadCombined = async () => {
+    if (!combinedRef.current) return
     setDownloading(true)
     try {
       const html2canvas = (await import('html2canvas')).default
-      const canvas = await html2canvas(ref.current, {
+      const canvas = await html2canvas(combinedRef.current, {
         backgroundColor: '#F2EDE4',
         scale: 2,
         useCORS: true,
         logging: false,
+        width: combinedRef.current.scrollWidth,
+        windowWidth: combinedRef.current.scrollWidth,
       })
       const link = document.createElement('a')
-      link.download = `${filename}.png`
+      link.download = `BRACU-Routine-${new Date().toLocaleDateString('en-GB').replace(/\//g, '-')}.png`
       link.href = canvas.toDataURL('image/png')
       link.click()
     } catch (e) {
@@ -174,7 +175,6 @@ export default function RoutineBuilderPage() {
     return true
   })
 
-  // Build timetable slots
   const timetableSlots: Record<string, Record<string, Section>> = {}
   for (const s of selected) {
     for (const slot of s.sectionSchedule?.classSchedules || []) {
@@ -207,15 +207,6 @@ export default function RoutineBuilderPage() {
     </button>
   )
 
-  const DownloadBtn = ({ refEl, filename, label }: { refEl: React.RefObject<HTMLDivElement | null>, filename: string, label: string }) => (
-    <button
-      onClick={() => downloadAsImage(refEl, filename)}
-      disabled={downloading}
-      style={{ background: downloading ? 'var(--dim)' : 'var(--paper)', color: 'var(--ink)', border: 'none', padding: '8px 16px', fontFamily: 'IBM Plex Mono,monospace', fontSize: '9px', letterSpacing: '2px', textTransform: 'uppercase', fontWeight: 700, cursor: downloading ? 'wait' : 'crosshair', display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0, transition: 'all .2s' }}>
-      {downloading ? '⏳ Saving...' : `⬇ ${label}`}
-    </button>
-  )
-
   return (
     <PageLayout
       eyebrow="Routine Builder"
@@ -224,10 +215,9 @@ export default function RoutineBuilderPage() {
     >
       <style>{`
         @keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
-        .tt-table { width: 100%; border-collapse: collapse; min-width: 500px; }
-        .tt-table th { background: #E8E0D4; padding: 8px 6px; text-align: center; font-size: 9px; letter-spacing: 1px; text-transform: uppercase; color: #6B5F4E; border: 1px solid rgba(242,237,228,0.09); font-family: IBM Plex Mono, monospace; }
-        .tt-table td { border: 1px solid rgba(242,237,228,0.09); padding: 4px; vertical-align: top; min-width: 60px; height: 48px; background: #F2EDE4; }
-        .exam-card { background: #F2EDE4; border: 1px solid rgba(242,237,228,0.09); padding: 14px 16px; margin-bottom: 2px; }
+        .tt-table { width: 100%; border-collapse: collapse; min-width: 700px; }
+        .tt-table th { background: #E8E0D4; padding: 8px 6px; text-align: center; font-size: 9px; letter-spacing: 1px; text-transform: uppercase; color: #6B5F4E; border: 1px solid #D4CCC0; font-family: IBM Plex Mono, monospace; }
+        .tt-table td { border: 1px solid #D4CCC0; padding: 4px; vertical-align: top; min-width: 70px; height: 52px; background: #F2EDE4; }
       `}</style>
 
       {/* Tabs */}
@@ -241,11 +231,11 @@ export default function RoutineBuilderPage() {
       {activeTab === 'courses' && (
         <>
           {selected.length > 0 && (
-            <div style={{ background: 'rgba(232,57,14,0.08)', border: '1px solid rgba(232,57,14,0.2)', padding: '10px 14px', marginBottom: '12px', display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <div style={{ background: 'rgba(0,180,255,0.06)', border: '1px solid rgba(0,180,255,0.2)', padding: '10px 14px', marginBottom: '12px', display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
               <div style={{ fontSize: '10px', color: 'var(--red)', fontWeight: 700, letterSpacing: '1px', flexShrink: 0 }}>{selected.length} courses · {totalCredits}cr</div>
               <div style={{ display: 'flex', gap: '5px', flex: 1, flexWrap: 'wrap' }}>
                 {selected.map(s => (
-                  <span key={s.sectionId} style={{ fontSize: '9px', background: 'rgba(232,57,14,0.12)', border: '1px solid rgba(232,57,14,0.3)', color: 'var(--paper)', padding: '3px 8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <span key={s.sectionId} style={{ fontSize: '9px', background: 'rgba(0,180,255,0.1)', border: '1px solid rgba(0,180,255,0.3)', color: 'var(--paper)', padding: '3px 8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                     {s.courseCode}-{s.sectionName}
                     <button onClick={() => removeSection(s)} style={{ background: 'none', border: 'none', color: 'var(--red)', fontSize: '10px', cursor: 'crosshair', padding: 0, lineHeight: 1 }}>✕</button>
                   </span>
@@ -269,7 +259,7 @@ export default function RoutineBuilderPage() {
               Available Now
             </button>
             <button onClick={() => setHideConflicts(p => !p)}
-              style={{ padding: '6px 12px', background: hideConflicts ? 'rgba(232,57,14,0.15)' : 'transparent', color: hideConflicts ? 'var(--red)' : 'var(--faded)', border: `1px solid ${hideConflicts ? 'rgba(232,57,14,0.4)' : 'var(--border)'}`, fontSize: '9px', fontFamily: 'IBM Plex Mono,monospace', cursor: 'crosshair', display: 'flex', alignItems: 'center', gap: '5px' }}>
+              style={{ padding: '6px 12px', background: hideConflicts ? 'rgba(0,180,255,0.15)' : 'transparent', color: hideConflicts ? 'var(--red)' : 'var(--faded)', border: `1px solid ${hideConflicts ? 'rgba(0,180,255,0.4)' : 'var(--border)'}`, fontSize: '9px', fontFamily: 'IBM Plex Mono,monospace', cursor: 'crosshair', display: 'flex', alignItems: 'center', gap: '5px' }}>
               <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: hideConflicts ? 'var(--red)' : 'var(--faded)', display: 'inline-block' }} />
               Hide Conflicts
             </button>
@@ -284,7 +274,7 @@ export default function RoutineBuilderPage() {
               const availColor = getAvailColor(s.availableSeats, s.capacity)
               return (
                 <div key={s.sectionId}
-                  style={{ padding: '12px 14px', borderBottom: '1px solid var(--border)', background: sel ? 'rgba(232,57,14,0.06)' : 'var(--ink)', opacity: conflict && !sel ? 0.4 : 1, borderLeft: `3px solid ${sel ? 'var(--red)' : 'transparent'}` }}>
+                  style={{ padding: '12px 14px', borderBottom: '1px solid var(--border)', background: sel ? 'rgba(0,180,255,0.06)' : 'var(--ink)', opacity: conflict && !sel ? 0.4 : 1, borderLeft: `3px solid ${sel ? 'var(--red)' : 'transparent'}` }}>
                   <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: 'flex', gap: '6px', alignItems: 'center', marginBottom: '3px', flexWrap: 'wrap' }}>
@@ -296,14 +286,14 @@ export default function RoutineBuilderPage() {
                       <div style={{ fontSize: '11px', color: 'var(--faded)', marginBottom: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.courseName}</div>
                       <div style={{ fontSize: '10px', color: 'var(--bronze)', fontWeight: 700 }}>👤 {s.faculties}</div>
                       {s.sectionSchedule?.classSchedules && s.sectionSchedule.classSchedules.length > 0 && (
-                        <div style={{ fontSize: '9px', color: 'var(--dim)', marginTop: '3px' }}>
+                        <div style={{ fontSize: '9px', color: 'var(--faded)', marginTop: '3px' }}>
                           {s.sectionSchedule.classSchedules.map(c => `${DAY_SHORT[c.day]} ${formatTime(c.startTime)}`).join(' · ')}
                         </div>
                       )}
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', flexShrink: 0 }}>
                       <button onClick={() => sel ? removeSection(s) : addSection(s)}
-                        style={{ background: sel ? 'rgba(232,57,14,0.15)' : 'var(--red)', color: sel ? 'var(--red)' : 'var(--paper)', border: `1px solid ${sel ? 'rgba(232,57,14,0.4)' : 'var(--red)'}`, padding: '6px 14px', fontFamily: 'IBM Plex Mono,monospace', fontSize: '9px', letterSpacing: '1px', textTransform: 'uppercase', cursor: 'crosshair' }}>
+                        style={{ background: sel ? 'rgba(0,180,255,0.15)' : 'var(--red)', color: sel ? 'var(--red)' : 'var(--paper)', border: `1px solid ${sel ? 'rgba(0,180,255,0.4)' : 'var(--red)'}`, padding: '6px 14px', fontFamily: 'IBM Plex Mono,monospace', fontSize: '9px', letterSpacing: '1px', textTransform: 'uppercase', cursor: 'crosshair' }}>
                         {sel ? 'Remove' : 'Add'}
                       </button>
                       <button onClick={() => setPreviewModal(s)}
@@ -325,7 +315,12 @@ export default function RoutineBuilderPage() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '10px' }}>
             <div style={{ fontSize: '11px', color: 'var(--faded)' }}>{totalCredits} credits · {selected.length} courses selected</div>
             {selected.length > 0 && (
-              <DownloadBtn refEl={timetableRef} filename="BRACU-Routine-Timetable" label="Download Timetable" />
+              <button
+                onClick={downloadCombined}
+                disabled={downloading}
+                style={{ background: downloading ? 'var(--dim)' : 'var(--paper)', color: 'var(--ink)', border: 'none', padding: '8px 18px', fontFamily: 'IBM Plex Mono,monospace', fontSize: '9px', letterSpacing: '2px', textTransform: 'uppercase', fontWeight: 700, cursor: downloading ? 'wait' : 'crosshair', display: 'flex', alignItems: 'center', gap: '6px', transition: 'all .2s' }}>
+                {downloading ? '⏳ Saving...' : '⬇ Download Full Routine'}
+              </button>
             )}
           </div>
 
@@ -341,64 +336,98 @@ export default function RoutineBuilderPage() {
             </div>
           ) : (
             <>
-              {/* Timetable — this gets downloaded */}
-              <div ref={timetableRef} style={{ background: '#F2EDE4', padding: '16px', border: '1px solid rgba(242,237,228,0.09)' }}>
-                {/* Header inside download area */}
-                <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div style={{ fontFamily: 'Bebas Neue,sans-serif', fontSize: '18px', color: '#E8390E', letterSpacing: '3px' }}>BRACU/CMD — CLASS TIMETABLE</div>
-                  <div style={{ fontSize: '10px', color: '#6B5F4E', letterSpacing: '1px' }}>{totalCredits} credits · {selected.length} courses</div>
-                </div>
-                <div style={{ overflowX: 'auto' }}>
-                  <table className="tt-table">
-                    <thead>
-                      <tr>
-                        <th style={{ width: '90px', minWidth: '80px' }}>Time</th>
-                        {DAYS.map(d => <th key={d} style={{ minWidth: '60px' }}>{DAY_SHORT[d]}</th>)}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {sortedTimes.length === 0 ? (
+              {/* Combined downloadable area — timetable + exams together */}
+              <div ref={combinedRef} style={{ background: '#F2EDE4', padding: '20px' }}>
+
+                {/* Timetable section */}
+                <div style={{ marginBottom: '24px' }}>
+                  <div style={{ marginBottom: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ fontFamily: 'Bebas Neue,sans-serif', fontSize: '20px', color: '#E8390E', letterSpacing: '3px' }}>BRACU/CMD — CLASS TIMETABLE</div>
+                    <div style={{ fontSize: '10px', color: '#6B5F4E', letterSpacing: '1px' }}>{totalCredits} credits · {selected.length} courses</div>
+                  </div>
+                  <div style={{ overflowX: 'auto' }}>
+                    <table className="tt-table">
+                      <thead>
                         <tr>
-                          <td colSpan={8} style={{ textAlign: 'center', padding: '24px', color: '#6B5F4E', fontSize: '11px' }}>
-                            No scheduled classes found.
-                          </td>
+                          <th style={{ width: '90px', minWidth: '80px' }}>Time</th>
+                          {DAYS.map(d => <th key={d} style={{ minWidth: '70px' }}>{DAY_SHORT[d]}</th>)}
                         </tr>
-                      ) : sortedTimes.map(timeKey => {
-                        const [start, end] = timeKey.split('-')
-                        return (
-                          <tr key={timeKey}>
-                            <td style={{ background: '#E8E0D4', padding: '6px 4px', textAlign: 'center', fontSize: '9px', color: '#6B5F4E', fontFamily: 'IBM Plex Mono,monospace', whiteSpace: 'nowrap' }}>
-                              {formatTime(start)}<br />–{formatTime(end)}
+                      </thead>
+                      <tbody>
+                        {sortedTimes.length === 0 ? (
+                          <tr>
+                            <td colSpan={8} style={{ textAlign: 'center', padding: '24px', color: '#6B5F4E', fontSize: '11px' }}>
+                              No scheduled classes found.
                             </td>
-                            {DAYS.map(day => {
-                              const s = timetableSlots[timeKey]?.[day]
-                              const isLab = s?.courseType === 'LAB'
-                              return (
-                                <td key={day}>
-                                  {s && (
-                                    <div style={{ background: isLab ? 'rgba(100,180,255,0.12)' : 'rgba(232,57,14,0.12)', border: `1px solid ${isLab ? 'rgba(100,180,255,0.3)' : 'rgba(232,57,14,0.3)'}`, padding: '4px 5px' }}>
-                                      <div style={{ fontSize: '9px', fontWeight: 700, color: isLab ? '#64b4ff' : '#E8390E', letterSpacing: '.5px' }}>{s.courseCode}</div>
-                                      <div style={{ fontSize: '8px', color: '#6B5F4E', marginTop: '1px' }}>{s.sectionName}</div>
-                                      <div style={{ fontSize: '8px', color: '#8B7355', marginTop: '1px' }}>{s.faculties}</div>
-                                      {isLab && <div style={{ fontSize: '7px', color: '#64b4ff', marginTop: '1px' }}>🧪 LAB</div>}
-                                    </div>
-                                  )}
-                                </td>
-                              )
-                            })}
                           </tr>
-                        )
-                      })}
-                    </tbody>
-                  </table>
+                        ) : sortedTimes.map(timeKey => {
+                          const [start, end] = timeKey.split('-')
+                          return (
+                            <tr key={timeKey}>
+                              <td style={{ background: '#E8E0D4', padding: '6px 4px', textAlign: 'center', fontSize: '9px', color: '#6B5F4E', fontFamily: 'IBM Plex Mono,monospace', whiteSpace: 'nowrap' }}>
+                                {formatTime(start)}<br />–{formatTime(end)}
+                              </td>
+                              {DAYS.map(day => {
+                                const s = timetableSlots[timeKey]?.[day]
+                                const isLab = s?.courseType === 'LAB'
+                                return (
+                                  <td key={day}>
+                                    {s && (
+                                      <div style={{ background: isLab ? 'rgba(100,180,255,0.15)' : 'rgba(232,57,14,0.12)', border: `1px solid ${isLab ? 'rgba(100,180,255,0.4)' : 'rgba(232,57,14,0.35)'}`, padding: '5px 6px', height: '100%' }}>
+                                        <div style={{ fontSize: '10px', fontWeight: 700, color: isLab ? '#0066AA' : '#C0300A', letterSpacing: '.5px' }}>{s.courseCode}</div>
+                                        <div style={{ fontSize: '8px', color: '#6B5F4E', marginTop: '2px' }}>{s.sectionName}</div>
+                                        <div style={{ fontSize: '8px', color: '#8B7355', marginTop: '1px' }}>{s.faculties}</div>
+                                        {isLab && <div style={{ fontSize: '8px', color: '#0066AA', marginTop: '2px', fontWeight: 700 }}>LAB</div>}
+                                      </div>
+                                    )}
+                                  </td>
+                                )
+                              })}
+                            </tr>
+                          )
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
-                {/* Footer watermark */}
-                <div style={{ marginTop: '10px', textAlign: 'right', fontSize: '9px', color: '#2E2A23', letterSpacing: '1px' }}>
-                  Generated by BRACU Command · bracu-command.vercel.app
+
+                {/* Divider */}
+                <div style={{ borderTop: '2px solid #D4CCC0', marginBottom: '20px' }} />
+
+                {/* Exam section */}
+                <div>
+                  <div style={{ fontFamily: 'Bebas Neue,sans-serif', fontSize: '20px', color: '#E8390E', letterSpacing: '3px', marginBottom: '14px' }}>EXAM SCHEDULE</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    {selected.map(s => (
+                      <div key={s.sectionId} style={{ background: '#EDE8DF', border: '1px solid #D4CCC0', padding: '12px 14px' }}>
+                        <div style={{ fontFamily: 'Bebas Neue,sans-serif', fontSize: '14px', color: '#C0300A', letterSpacing: '1px', marginBottom: '4px' }}>
+                          {s.courseCode} — {s.sectionName} · <span style={{ fontSize: '11px', color: '#8B7355', fontFamily: 'IBM Plex Mono,monospace', fontWeight: 400 }}>{s.faculties}</span>
+                        </div>
+                        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                          {s.sectionSchedule?.midExamDetail ? (
+                            <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                              <span style={{ fontSize: '9px', color: '#8B7355', fontFamily: 'IBM Plex Mono,monospace', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 700 }}>Mid:</span>
+                              <span style={{ fontSize: '10px', color: '#3A3025', fontFamily: 'IBM Plex Mono,monospace' }}>{s.sectionSchedule.midExamDetail}</span>
+                            </div>
+                          ) : (
+                            <span style={{ fontSize: '9px', color: '#B0A898', fontFamily: 'IBM Plex Mono,monospace' }}>Mid: TBA</span>
+                          )}
+                          {s.sectionSchedule?.finalExamDetail ? (
+                            <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                              <span style={{ fontSize: '9px', color: '#C0300A', fontFamily: 'IBM Plex Mono,monospace', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 700 }}>Final:</span>
+                              <span style={{ fontSize: '10px', color: '#3A3025', fontFamily: 'IBM Plex Mono,monospace' }}>{s.sectionSchedule.finalExamDetail}</span>
+                            </div>
+                          ) : (
+                            <span style={{ fontSize: '9px', color: '#B0A898', fontFamily: 'IBM Plex Mono,monospace' }}>Final: TBA</span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
 
-              {/* Selected list */}
+              {/* Selected list below (not downloaded) */}
               <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
                 <div style={{ fontSize: '9px', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--faded)', marginBottom: '8px', fontWeight: 700 }}>SELECTED COURSES</div>
                 {selected.map(s => (
@@ -409,7 +438,7 @@ export default function RoutineBuilderPage() {
                       <div style={{ fontSize: '9px', color: getAvailColor(s.availableSeats, s.capacity), marginTop: '2px' }}>{s.availableSeats} seats left</div>
                     </div>
                     <button onClick={() => removeSection(s)}
-                      style={{ background: 'rgba(232,57,14,0.1)', color: 'var(--red)', border: '1px solid rgba(232,57,14,0.3)', padding: '5px 12px', fontFamily: 'IBM Plex Mono,monospace', fontSize: '9px', letterSpacing: '1px', textTransform: 'uppercase', cursor: 'crosshair', flexShrink: 0 }}>
+                      style={{ background: 'rgba(0,180,255,0.1)', color: 'var(--red)', border: '1px solid rgba(0,180,255,0.3)', padding: '5px 12px', fontFamily: 'IBM Plex Mono,monospace', fontSize: '9px', letterSpacing: '1px', textTransform: 'uppercase', cursor: 'crosshair', flexShrink: 0 }}>
                       Remove
                     </button>
                   </div>
@@ -423,13 +452,7 @@ export default function RoutineBuilderPage() {
       {/* ─── EXAMS TAB ─── */}
       {activeTab === 'exams' && (
         <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '10px' }}>
-            <div style={{ fontSize: '11px', color: 'var(--faded)' }}>{selected.length} courses · {totalCredits} credits</div>
-            {selected.length > 0 && (
-              <DownloadBtn refEl={examRef} filename="BRACU-Routine-Exams" label="Download Exam Schedule" />
-            )}
-          </div>
-
+          <div style={{ fontSize: '11px', color: 'var(--faded)', marginBottom: '14px' }}>{selected.length} courses · {totalCredits} credits</div>
           {selected.length === 0 ? (
             <div style={{ padding: '60px 20px', textAlign: 'center', background: 'var(--ink2)', border: '1px solid var(--border)' }}>
               <div style={{ fontSize: '32px', marginBottom: '12px' }}>📝</div>
@@ -441,48 +464,31 @@ export default function RoutineBuilderPage() {
               </button>
             </div>
           ) : (
-            /* Exam schedule — this gets downloaded */
-            <div ref={examRef} style={{ background: '#F2EDE4', padding: '16px', border: '1px solid rgba(242,237,228,0.09)' }}>
-              {/* Header inside download area */}
-              <div style={{ marginBottom: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ fontFamily: 'Bebas Neue,sans-serif', fontSize: '18px', color: '#E8390E', letterSpacing: '3px' }}>BRACU/CMD — EXAM SCHEDULE</div>
-                <div style={{ fontSize: '10px', color: '#6B5F4E', letterSpacing: '1px' }}>{selected.length} courses</div>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                {selected.map(s => (
-                  <div key={s.sectionId} className="exam-card">
-                    <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', marginBottom: '10px' }}>
-                      <div>
-                        <div style={{ fontFamily: 'Bebas Neue,sans-serif', fontSize: '16px', color: '#E8390E', letterSpacing: '1px' }}>{s.courseCode} - {s.sectionName}</div>
-                        <div style={{ fontSize: '10px', color: '#8B7355', marginTop: '2px' }}>{s.faculties} · {s.courseName}</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+              {selected.map(s => (
+                <div key={s.sectionId} style={{ background: 'var(--ink)', border: '1px solid var(--border)', padding: '14px 16px' }}>
+                  <div style={{ fontFamily: 'Bebas Neue,sans-serif', fontSize: '16px', color: 'var(--red)', letterSpacing: '1px', marginBottom: '4px' }}>{s.courseCode} - {s.sectionName}</div>
+                  <div style={{ fontSize: '10px', color: 'var(--bronze)', marginBottom: '10px' }}>{s.faculties} · {s.courseName}</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    {s.sectionSchedule?.midExamDetail ? (
+                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 10px', background: 'rgba(0,180,255,0.05)', border: '1px solid rgba(0,180,255,0.15)', flexWrap: 'wrap', gap: '6px' }}>
+                        <span style={{ fontSize: '10px', color: 'var(--bronze)', fontWeight: 700 }}>📅 MIDTERM</span>
+                        <span style={{ fontSize: '10px', color: 'var(--paper)' }}>{s.sectionSchedule.midExamDetail}</span>
                       </div>
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                      {s.sectionSchedule?.midExamDetail ? (
-                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 10px', background: 'rgba(139,115,85,0.08)', border: '1px solid rgba(139,115,85,0.2)', flexWrap: 'wrap', gap: '6px' }}>
-                          <span style={{ fontSize: '10px', color: '#8B7355', fontWeight: 700 }}>📅 MIDTERM</span>
-                          <span style={{ fontSize: '10px', color: '#F2EDE4' }}>{s.sectionSchedule.midExamDetail}</span>
-                        </div>
-                      ) : (
-                        <div style={{ fontSize: '10px', color: '#2E2A23', padding: '6px 10px' }}>Midterm: Not scheduled yet</div>
-                      )}
-                      {s.sectionSchedule?.finalExamDetail ? (
-                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 10px', background: 'rgba(232,57,14,0.06)', border: '1px solid rgba(232,57,14,0.2)', flexWrap: 'wrap', gap: '6px' }}>
-                          <span style={{ fontSize: '10px', color: '#E8390E', fontWeight: 700 }}>📅 FINAL</span>
-                          <span style={{ fontSize: '10px', color: '#F2EDE4' }}>{s.sectionSchedule.finalExamDetail}</span>
-                        </div>
-                      ) : (
-                        <div style={{ fontSize: '10px', color: '#2E2A23', padding: '6px 10px' }}>Final: Not scheduled yet</div>
-                      )}
-                    </div>
+                    ) : (
+                      <div style={{ fontSize: '10px', color: 'var(--faded)', padding: '6px 10px' }}>Midterm: Not scheduled yet</div>
+                    )}
+                    {s.sectionSchedule?.finalExamDetail ? (
+                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 10px', background: 'rgba(0,180,255,0.08)', border: '1px solid rgba(0,180,255,0.2)', flexWrap: 'wrap', gap: '6px' }}>
+                        <span style={{ fontSize: '10px', color: 'var(--red)', fontWeight: 700 }}>📅 FINAL</span>
+                        <span style={{ fontSize: '10px', color: 'var(--paper)' }}>{s.sectionSchedule.finalExamDetail}</span>
+                      </div>
+                    ) : (
+                      <div style={{ fontSize: '10px', color: 'var(--faded)', padding: '6px 10px' }}>Final: Not scheduled yet</div>
+                    )}
                   </div>
-                ))}
-              </div>
-              {/* Footer watermark */}
-              <div style={{ marginTop: '12px', textAlign: 'right', fontSize: '9px', color: '#2E2A23', letterSpacing: '1px' }}>
-                Generated by BRACU Command · bracu-command.vercel.app
-              </div>
+                </div>
+              ))}
             </div>
           )}
         </div>
@@ -492,10 +498,10 @@ export default function RoutineBuilderPage() {
       {previewModal && (
         <>
           <div onClick={() => setPreviewModal(null)}
-            style={{ position: 'fixed', inset: 0, background: 'rgba(12,11,9,0.85)', zIndex: 900, backdropFilter: 'blur(4px)' }} />
+            style={{ position: 'fixed', inset: 0, background: 'rgba(10,14,26,0.9)', zIndex: 900, backdropFilter: 'blur(4px)' }} />
           <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'var(--ink2)', border: '1px solid var(--border)', borderBottom: 'none', zIndex: 901, maxHeight: '85vh', display: 'flex', flexDirection: 'column', animation: 'slideUp 0.25s ease-out' }}>
             <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0, position: 'relative' }}>
-              <div style={{ width: '40px', height: '4px', background: 'rgba(242,237,228,0.15)', borderRadius: '2px', position: 'absolute', left: '50%', transform: 'translateX(-50%)', top: '8px' }} />
+              <div style={{ width: '40px', height: '4px', background: 'rgba(0,180,255,0.2)', borderRadius: '2px', position: 'absolute', left: '50%', transform: 'translateX(-50%)', top: '8px' }} />
               <div>
                 <div style={{ fontFamily: 'Bebas Neue,sans-serif', fontSize: '20px', color: 'var(--red)', letterSpacing: '2px' }}>{previewModal.courseCode} - {previewModal.sectionName}</div>
                 <div style={{ fontSize: '11px', color: 'var(--faded)', marginTop: '2px' }}>{previewModal.courseName}</div>
@@ -504,15 +510,11 @@ export default function RoutineBuilderPage() {
                 style={{ background: 'none', border: '1px solid var(--border)', color: 'var(--faded)', fontSize: '12px', cursor: 'crosshair', padding: '4px 10px', fontFamily: 'IBM Plex Mono,monospace', flexShrink: 0 }}>✕</button>
             </div>
             <div style={{ overflowY: 'auto', padding: '16px', flex: 1, display: 'flex', flexDirection: 'column', gap: '12px' }}>
-
-              {/* Faculty */}
               <div style={{ background: 'var(--ink)', border: '1px solid var(--border)', padding: '12px' }}>
                 <div style={{ fontSize: '9px', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--faded)', marginBottom: '6px', fontWeight: 700 }}>FACULTY & SECTION</div>
                 <div style={{ fontSize: '16px', color: 'var(--bronze)', fontWeight: 700 }}>👤 {previewModal.faculties}</div>
                 <div style={{ fontSize: '10px', color: 'var(--faded)', marginTop: '4px' }}>Section {previewModal.sectionName} · {previewModal.courseCredit}cr · {previewModal.courseType}</div>
               </div>
-
-              {/* Seats */}
               <div style={{ background: 'var(--ink)', border: '1px solid var(--border)', padding: '12px' }}>
                 <div style={{ fontSize: '9px', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--faded)', marginBottom: '8px', fontWeight: 700 }}>SEATS</div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '6px', marginBottom: '8px' }}>
@@ -527,17 +529,15 @@ export default function RoutineBuilderPage() {
                     </div>
                   ))}
                 </div>
-                <div style={{ background: 'rgba(242,237,228,0.06)', height: '4px' }}>
+                <div style={{ background: 'rgba(0,180,255,0.06)', height: '4px' }}>
                   <div style={{ height: '100%', background: getAvailColor(previewModal.availableSeats, previewModal.capacity), width: `${previewModal.capacity > 0 ? (previewModal.consumedSeat / previewModal.capacity) * 100 : 0}%` }} />
                 </div>
               </div>
-
-              {/* Class Schedule */}
               {previewModal.sectionSchedule?.classSchedules && previewModal.sectionSchedule.classSchedules.length > 0 && (
                 <div style={{ background: 'var(--ink)', border: '1px solid var(--border)', padding: '12px' }}>
                   <div style={{ fontSize: '9px', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--faded)', marginBottom: '8px', fontWeight: 700 }}>📚 CLASS SCHEDULE</div>
                   {previewModal.sectionSchedule.classSchedules.map((s, i) => (
-                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid rgba(242,237,228,0.05)', fontSize: '12px' }}>
+                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid rgba(0,180,255,0.08)', fontSize: '12px' }}>
                       <span style={{ color: 'var(--red)', fontWeight: 700 }}>{s.day}</span>
                       <span style={{ color: 'var(--paper)' }}>{formatTime(s.startTime)} – {formatTime(s.endTime)}</span>
                     </div>
@@ -545,8 +545,6 @@ export default function RoutineBuilderPage() {
                   {previewModal.roomName && <div style={{ fontSize: '10px', color: 'var(--faded)', marginTop: '8px' }}>📍 {previewModal.roomName}</div>}
                 </div>
               )}
-
-              {/* Lab Schedule */}
               {previewModal.labSchedules && previewModal.labSchedules.length > 0 && (
                 <div style={{ background: 'var(--ink)', border: '1px solid rgba(100,180,255,0.25)', padding: '12px' }}>
                   <div style={{ fontSize: '9px', letterSpacing: '2px', textTransform: 'uppercase', color: '#64b4ff', marginBottom: '8px', fontWeight: 700 }}>🧪 LAB SCHEDULE</div>
@@ -560,13 +558,11 @@ export default function RoutineBuilderPage() {
                   {previewModal.labRoomName && <div style={{ fontSize: '10px', color: 'var(--faded)', marginTop: '8px' }}>📍 {previewModal.labRoomName}</div>}
                 </div>
               )}
-
-              {/* Exam Dates */}
               {(previewModal.sectionSchedule?.midExamDetail || previewModal.sectionSchedule?.finalExamDetail) && (
                 <div style={{ background: 'var(--ink)', border: '1px solid var(--border)', padding: '12px' }}>
                   <div style={{ fontSize: '9px', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--faded)', marginBottom: '8px', fontWeight: 700 }}>📅 EXAM DATES</div>
                   {previewModal.sectionSchedule?.midExamDetail && (
-                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid rgba(242,237,228,0.05)', fontSize: '11px', flexWrap: 'wrap', gap: '4px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid rgba(0,180,255,0.08)', fontSize: '11px', flexWrap: 'wrap', gap: '4px' }}>
                       <span style={{ color: 'var(--bronze)' }}>Midterm</span>
                       <span style={{ color: 'var(--paper)' }}>{previewModal.sectionSchedule.midExamDetail}</span>
                     </div>
@@ -579,10 +575,8 @@ export default function RoutineBuilderPage() {
                   )}
                 </div>
               )}
-
-              {/* Add/Remove */}
               <button onClick={() => { isSelected(previewModal) ? removeSection(previewModal) : addSection(previewModal); setPreviewModal(null) }}
-                style={{ width: '100%', background: isSelected(previewModal) ? 'rgba(232,57,14,0.1)' : 'var(--red)', color: isSelected(previewModal) ? 'var(--red)' : 'var(--paper)', border: `1px solid ${isSelected(previewModal) ? 'rgba(232,57,14,0.4)' : 'var(--red)'}`, padding: '14px', fontFamily: 'IBM Plex Mono,monospace', fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase', fontWeight: 700, cursor: 'crosshair' }}>
+                style={{ width: '100%', background: isSelected(previewModal) ? 'rgba(0,180,255,0.1)' : 'var(--red)', color: isSelected(previewModal) ? 'var(--red)' : 'var(--paper)', border: `1px solid ${isSelected(previewModal) ? 'rgba(0,180,255,0.4)' : 'var(--red)'}`, padding: '14px', fontFamily: 'IBM Plex Mono,monospace', fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase', fontWeight: 700, cursor: 'crosshair' }}>
                 {isSelected(previewModal) ? 'Remove from Routine' : 'Add to Routine →'}
               </button>
             </div>

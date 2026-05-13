@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { getStudentId } from '@/lib/session'
 import { useRouter } from 'next/navigation'
 
+
 const TILES = [
   { id: 'resources', num: '01', icon: '📚', name: 'Resource Archive', desc: 'Past papers, notes, Drive links, YouTube — community rated.', tag: '// resource.cmd', status: 'live', category: 'Academic' },
   { id: 'faculty', num: '02', icon: '⭐', name: 'Faculty Intelligence', desc: 'Real BRACU faculty reviews — anonymous, verified students only.', tag: '// faculty.cmd', status: 'live', category: 'Academic' },
@@ -218,6 +219,16 @@ export default function Dashboard() {
             ))}
           </div>
         </div>
+        {/* CTA */}
+        <div style={{ padding: '40px 16px', textAlign: 'center', borderTop: '1px solid var(--border)', marginTop: '8px' }}>
+          <div style={{ fontSize: '8px', letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--red)', marginBottom: '10px' }}>// For every batch that comes after us</div>
+          <div style={{ fontFamily: 'Playfair Display,serif', fontStyle: 'italic', fontSize: '28px', fontWeight: 700, color: 'var(--paper)', lineHeight: 1.1, marginBottom: '10px' }}>Be the senior<br />you never had.</div>
+          <p style={{ fontSize: '11px', color: 'var(--faded)', lineHeight: 1.9, marginBottom: '20px' }}>Help grow BRACU Command — contribute resources, write reviews, share knowledge.</p>
+          <button onClick={() => router.push('/resources')}
+            style={{ fontFamily: 'IBM Plex Mono,monospace', fontSize: '10px', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--ink)', background: 'var(--paper)', border: 'none', padding: '14px 28px', cursor: 'crosshair', width: '100%' }}>
+            Contribute Resources →
+          </button>
+        </div>
 
         {/* Fixed Bottom Tab Bar */}
         <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'var(--ink2)', borderTop: '1px solid var(--border)', display: 'flex', zIndex: 500, paddingBottom: 'env(safe-area-inset-bottom)' }}>
@@ -235,7 +246,7 @@ export default function Dashboard() {
         </div>
 
         <style>{`
-          @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500;700&display=swap');
+          @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500;700&family=Playfair+Display:ital,wght@1,700&display=swap');
           * { cursor: crosshair; box-sizing: border-box; margin: 0; padding: 0; }
           :root { --ink: #0A0E1A; --ink2: #0D1221; --paper: #E8F4FF; --red: #00B4FF; --faded: #4A7A9B; --dim: #1A2A3A; --bronze: #00D4FF; --border: rgba(0,180,255,0.15); }
           body { background: var(--ink); color: var(--paper); font-family: 'IBM Plex Mono', monospace; }
