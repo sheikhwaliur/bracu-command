@@ -142,14 +142,31 @@ export default function RoutineBuilderPage() {
     setDownloading(true)
     try {
       const html2canvas = (await import('html2canvas')).default
-      const canvas = await html2canvas(combinedRef.current, {
+      const el = combinedRef.current
+  
+      // Temporarily expand to full width for capture
+      const prevOverflow = document.body.style.overflow
+      const prevWidth = el.style.width
+      const prevMaxWidth = el.style.maxWidth
+  
+      document.body.style.overflow = 'hidden'
+      el.style.width = '900px'
+      el.style.maxWidth = '900px'
+  
+      const canvas = await html2canvas(el, {
         backgroundColor: '#F2EDE4',
         scale: 2,
         useCORS: true,
         logging: false,
-        width: combinedRef.current.scrollWidth,
-        windowWidth: combinedRef.current.scrollWidth,
+        width: 900,
+        windowWidth: 900,
       })
+  
+      // Restore original styles
+      document.body.style.overflow = prevOverflow
+      el.style.width = prevWidth
+      el.style.maxWidth = prevMaxWidth
+  
       const link = document.createElement('a')
       link.download = `BRACU-Routine-${new Date().toLocaleDateString('en-GB').replace(/\//g, '-')}.png`
       link.href = canvas.toDataURL('image/png')
