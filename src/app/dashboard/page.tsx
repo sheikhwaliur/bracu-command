@@ -265,19 +265,21 @@ export default function Dashboard() {
           </button>
         </div>
 
-        {/* Fixed Bottom Tab Bar */}
-        <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'var(--ink2)', borderTop: '1px solid var(--border)', display: 'flex', zIndex: 500, paddingBottom: 'env(safe-area-inset-bottom)' }}>
-          {BOTTOM_TABS.map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => { setCategory(tab.id); setSearch('') }}
-              style={{ flex: 1, padding: '10px 4px 12px', background: 'none', border: 'none', cursor: 'crosshair', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', borderTop: category === tab.id ? '2px solid var(--red)' : '2px solid transparent', transition: 'all .15s' }}>
-              <span style={{ fontSize: '18px' }}>{tab.icon}</span>
-              <span style={{ fontSize: '8px', letterSpacing: '0.5px', textTransform: 'uppercase', fontFamily: 'IBM Plex Mono,monospace', color: category === tab.id ? 'var(--red)' : 'var(--faded)', fontWeight: category === tab.id ? 700 : 400 }}>
-                {tab.label}
-              </span>
-            </button>
-          ))}
+        {/* Fixed Bottom Tab Bar — floating pill dock */}
+        <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 500, paddingBottom: 'env(safe-area-inset-bottom)', background: 'linear-gradient(to top, var(--ink) 60%, transparent)', paddingTop: '16px' }}>
+          <div style={{ margin: '0 12px 12px', background: '#0D1221', border: '1px solid rgba(0,180,255,0.2)', borderRadius: '50px', padding: '5px', display: 'flex', gap: '2px' }}>
+            {BOTTOM_TABS.map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => { setCategory(tab.id); setSearch('') }}
+                style={{ flex: 1, padding: category === tab.id ? '8px 6px' : '8px 4px', background: category === tab.id ? 'var(--red)' : 'transparent', borderRadius: '40px', border: 'none', cursor: 'crosshair', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', transition: 'all .2s' }}>
+                <span style={{ fontSize: category === tab.id ? '16px' : '16px' }}>{tab.icon}</span>
+                <span style={{ fontSize: '7px', letterSpacing: '0.5px', textTransform: 'uppercase', fontFamily: 'IBM Plex Mono,monospace', color: category === tab.id ? '#0A0E1A' : 'var(--faded)', fontWeight: category === tab.id ? 700 : 400, whiteSpace: 'nowrap' }}>
+                  {tab.label}
+                </span>
+              </button>
+            ))}
+          </div>
         </div>
 
         <style>{`
