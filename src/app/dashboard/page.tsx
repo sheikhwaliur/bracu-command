@@ -53,6 +53,7 @@ export default function Dashboard() {
   const [hoveredTile, setHoveredTile] = useState<string | null>(null)
   const [showTop, setShowTop] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  const [authDone, setAuthDone] = useState(false)
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768)
@@ -65,6 +66,7 @@ export default function Dashboard() {
     const id = getStudentId()
     if (!id) { router.push('/login'); return }
     setStudentId(id)
+    setTimeout(() => setAuthDone(true), 600)
   }, [])
 
   useEffect(() => {
@@ -123,6 +125,39 @@ export default function Dashboard() {
     grid: { display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '2px', background: 'transparent' } as React.CSSProperties,
     backTop: { position: 'fixed', bottom: '32px', right: '32px', background: 'var(--red)', color: 'var(--paper)', border: 'none', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', cursor: 'crosshair', zIndex: 400, transition: 'all .2s' },
   }
+
+  if (!authDone) return (
+    <div style={{ minHeight: '100vh', background: '#0A0E1A', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;700&display=swap');
+        @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        :root { --ink: #0A0E1A; --red: #00B4FF; --paper: #E8F4FF; --faded: #4A7A9B; }
+      `}</style>
+  
+      {/* Top line */}
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '1px', background: 'linear-gradient(90deg,transparent,#00B4FF,transparent)' }} />
+      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '1px', background: 'linear-gradient(90deg,transparent,rgba(0,180,255,0.2),transparent)' }} />
+  
+      {/* Ghost text */}
+      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', pointerEvents: 'none' }}>
+        <div style={{ fontFamily: 'Bebas Neue,monospace', fontSize: 'clamp(120px,22vw,200px)', fontWeight: 700, color: 'rgba(0,180,255,0.025)', userSelect: 'none', letterSpacing: '-8px' }}>CMD</div>
+      </div>
+  
+      {/* Content */}
+      <div style={{ position: 'relative', textAlign: 'center', animation: 'fadeIn 0.3s ease-out' }}>
+        <div style={{ fontFamily: 'Bebas Neue,monospace', fontSize: '22px', fontWeight: 700, color: '#E8F4FF', letterSpacing: '8px', marginBottom: '6px' }}>
+          BRACU<span style={{ color: '#00B4FF' }}>/</span>CMD
+        </div>
+        <div style={{ fontFamily: 'IBM Plex Mono,monospace', fontSize: '9px', color: '#4A7A9B', letterSpacing: '4px', marginBottom: '40px' }}>
+          CLASSIFIED — STUDENTS ONLY
+        </div>
+        <div style={{ fontFamily: 'IBM Plex Mono,monospace', fontSize: '9px', color: '#00B4FF', letterSpacing: '3px' }}>
+          AUTHENTICATING
+        </div>
+      </div>
+    </div>
+  )
 
   // Mobile layout
   if (isMobile) {
