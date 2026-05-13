@@ -14,10 +14,9 @@ export async function POST(req: NextRequest) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     )
 
-    // Get user's gsuite email (this is what's in auth.users)
     const { data: user } = await supabase
       .from('users')
-      .select('gsuite_email, recovery_email')
+      .select('gsuite_email, recovery_email, auth_uid')
       .eq('student_id', studentId)
       .single()
 
@@ -25,19 +24,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    // Auth user is always linked to gsuite_email
-    const authEmail = user.gsuite_email
+    let userId = user.auth_uid
 
-    // Find auth user by gsuite email
-    const { data: authUsers } = await supabase.auth.admin.listUsers()
-    const authUser = authUsers?.users?.find(u => u.email === authEmail)
-
-    if (!authUser) {
-      return NextResponse.json({ error: 'Auth user not found' }, { status: 404 })
+    // If no auth_uid stored, find by email
+    if (!userId) {
+      const { data: { users } } = await supabase.auth.admin.listUsers({ perPage: 1000, page: 1 })
+      const authUser = users?.find(u => u.email === user.gsuite_email || u.email === user.recovery_email)
+      if (!authUser) {
+        return NextResponse.json({ error: 'Auth user not found' }, { status: 404 })
+      }
+      userId = authUser.id
     }
 
-    // Update password
-    const { error } = await supabase.auth.admin.updateUserById(authUser.id, {
+    const { error } = await supabase.auth.admin.updateUserById(userId, {
       password: newPassword
     })
 
@@ -46,6 +45,7 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ success: true })
+
   } catch (err) {
     console.error('Reset password error:', err)
     return NextResponse.json({ error: 'Server error' }, { status: 500 })

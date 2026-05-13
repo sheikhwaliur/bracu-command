@@ -83,6 +83,18 @@ export default function LoginPage() {
     if (authError && !authError.message.includes('already registered')) {
       setErr(authError.message); setLoading(false); return
     }
+    const { data: signUpData } = await supabase.auth.signUp({
+      email: gsuiteEmail,
+      password: pw,
+    })
+    
+    await supabase.from('users').insert({
+      student_id: id,
+      password_hash: 'supabase_auth',
+      recovery_email: recoveryEmail || gsuiteEmail,
+      gsuite_email: gsuiteEmail,
+      auth_uid: signUpData?.user?.id,  // ← store the UID
+    })
 
     // Save to users table
     await supabase.from('users').insert({
