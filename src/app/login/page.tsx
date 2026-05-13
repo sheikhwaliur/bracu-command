@@ -177,6 +177,7 @@ export default function LoginPage() {
     if (newPw.length < 8) { setErr('New password must be at least 8 characters.'); return }
     setErr(''); setLoading(true)
 
+    // Fetch the user's email first
     const { data: user } = await supabase
       .from('users')
       .select('recovery_email, gsuite_email')
@@ -190,19 +191,24 @@ export default function LoginPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: resetTo, otp: resetOtp, studentId: id, type: 'reset' }),
     })
-    const data = await res.json()
-    if (!res.ok) { setErr(data.error || 'Invalid OTP.'); setLoading(false); return }
-
-    // Update password
-    const { error: updateError } = await supabase.auth.updateUser({ password: newPw })
-    if (updateError) { setErr('Failed to update password. Please try again.'); setLoading(false); return }
-
-    setMsg('Password reset! You can now sign in.')
-    setMode('login')
-    setResetOtpSent(false)
-    setResetOtp('')
-    setNewPw('')
-    setLoading(false)
+      const data = await res.json()
+      if (!res.ok) { setErr(data.error || 'Invalid OTP.'); setLoading(false); return }
+      
+      // Update password using admin API
+      const resetRes = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ studentId: id, newPassword: newPw }),
+      })
+      const resetData = await resetRes.json()
+      if (!resetRes.ok) { setErr(resetData.error || 'Failed to reset password.'); setLoading(false); return }
+      
+      setMsg('Password reset! You can now sign in.')
+      setMode('login')
+      setResetOtpSent(false)
+      setResetOtp('')
+      setNewPw('')
+      setLoading(false)
   }, [resetOtp, newPw, id])
 
   const inpStyle = (name: string): React.CSSProperties => ({
