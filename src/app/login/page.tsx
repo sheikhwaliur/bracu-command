@@ -12,9 +12,6 @@ export default function LoginPage() {
   const [pw2, setPw2] = useState('')
   const [gsuiteEmail, setGsuiteEmail] = useState('')
   const [recoveryEmail, setRecoveryEmail] = useState('')
-  const [otp, setOtp] = useState('')
-  const [otpSent, setOtpSent] = useState(false)
-  const [otpVerified, setOtpVerified] = useState(false)
   const [resetOtp, setResetOtp] = useState('')
   const [resetOtpSent, setResetOtpSent] = useState(false)
   const [newPw, setNewPw] = useState('')
@@ -24,7 +21,6 @@ export default function LoginPage() {
   const [focused, setFocused] = useState<string | null>(null)
   const [btnHover, setBtnHover] = useState(false)
 
-  // Validate BRACU Student ID format
   const validateBracuId = (studentId: string) => {
     if (!/^\d{8}$/.test(studentId)) return 'Student ID must be exactly 8 digits.'
     const year = parseInt(studentId.substring(0, 2))
@@ -32,8 +28,8 @@ export default function LoginPage() {
     return null
   }
 
-  // Send OTP to G Suite email
-  const sendGsuiteOtp = useCallback(async () => {
+  // ── SIGNUP ──
+  const handleSignup = useCallback(async () => {
     const idErr = validateBracuId(id)
     if (idErr) { setErr(idErr); return }
     if (!gsuiteEmail.endsWith('@g.bracu.ac.bd')) {
@@ -41,77 +37,31 @@ export default function LoginPage() {
     }
     if (pw.length < 8) { setErr('Password must be at least 8 characters.'); return }
     if (pw !== pw2) { setErr('Passwords do not match.'); return }
-
     setErr(''); setLoading(true)
 
-    // Check if already registered
     const { data: existing } = await supabase.from('users').select('student_id').eq('student_id', id).single()
     if (existing) { setErr('Student ID already registered. Please sign in.'); setLoading(false); return }
 
-    // Send OTP via our API
-    const res = await fetch('/api/auth/send-otp', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: gsuiteEmail, studentId: id, type: 'signup' }),
-    })
-    const data = await res.json()
-    if (!res.ok) { setErr(data.error || 'Failed to send OTP.'); setLoading(false); return }
-
-    setOtpSent(true)
-    setMsg(`OTP sent to ${gsuiteEmail}. Check your inbox.`)
-    setLoading(false)
-  }, [id, gsuiteEmail, pw, pw2])
-
-  // Verify OTP and create account
-  const verifyOtpAndSignup = useCallback(async () => {
-    if (!otp || otp.length !== 6) { setErr('Enter the 6-digit OTP.'); return }
-    setErr(''); setLoading(true)
-
-    const res = await fetch('/api/auth/verify-otp', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: gsuiteEmail, otp, studentId: id, type: 'signup' }),
-    })
-    const data = await res.json()
-    if (!res.ok) { setErr(data.error || 'Invalid OTP.'); setLoading(false); return }
-
-    // Create account in Supabase auth
-    const { error: authError } = await supabase.auth.signUp({
+    const { data: signUpData, error: authError } = await supabase.auth.signUp({
       email: gsuiteEmail,
       password: pw,
     })
-    if (authError && !authError.message.includes('already registered')) {
-      setErr(authError.message); setLoading(false); return
-    }
-    const { data: signUpData } = await supabase.auth.signUp({
-      email: gsuiteEmail,
-      password: pw,
-    })
-    
+    if (authError) { setErr(authError.message); setLoading(false); return }
+
     await supabase.from('users').insert({
       student_id: id,
       password_hash: 'supabase_auth',
       recovery_email: recoveryEmail || gsuiteEmail,
       gsuite_email: gsuiteEmail,
-      auth_uid: signUpData?.user?.id,  // ← store the UID
+      auth_uid: signUpData?.user?.id,
     })
 
-    // Save to users table
-    await supabase.from('users').insert({
-      student_id: id,
-      password_hash: 'supabase_auth',
-      recovery_email: recoveryEmail || gsuiteEmail,
-      gsuite_email: gsuiteEmail,
-    })
-
-    setMsg('Account created! You can now sign in.')
+    setMsg('Account created! Check your BRACU G Suite inbox and click the confirmation link to activate your account.')
     setMode('login')
-    setOtpSent(false)
-    setOtp('')
     setLoading(false)
-  }, [otp, gsuiteEmail, id, pw, recoveryEmail])
+  }, [id, gsuiteEmail, recoveryEmail, pw, pw2])
 
-  // Login
+  // ── LOGIN ──
   const handleLogin = useCallback(async () => {
     const { allowed, waitSeconds } = checkRateLimit({ key: 'login', limitMs: 300000, maxAttempts: 10 })
     if (!allowed) { setErr(`Too many attempts. Wait ${waitSeconds}s.`); return }
@@ -154,7 +104,7 @@ export default function LoginPage() {
     setLoading(false)
   }, [id, pw])
 
-  // Send reset OTP
+  // ── SEND RESET OTP ──
   const sendResetOtp = useCallback(async () => {
     const idErr = validateBracuId(id)
     if (idErr) { setErr(idErr); return }
@@ -183,13 +133,12 @@ export default function LoginPage() {
     setLoading(false)
   }, [id])
 
-  // Verify reset OTP and set new password
+  // ── VERIFY RESET OTP ──
   const verifyResetOtp = useCallback(async () => {
     if (!resetOtp || resetOtp.length !== 6) { setErr('Enter the 6-digit OTP.'); return }
     if (newPw.length < 8) { setErr('New password must be at least 8 characters.'); return }
     setErr(''); setLoading(true)
 
-    // Fetch the user's email first
     const { data: user } = await supabase
       .from('users')
       .select('recovery_email, gsuite_email')
@@ -203,39 +152,31 @@ export default function LoginPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: resetTo, otp: resetOtp, studentId: id, type: 'reset' }),
     })
-      const data = await res.json()
-      if (!res.ok) { setErr(data.error || 'Invalid OTP.'); setLoading(false); return }
-      
-      // Update password using admin API
-      const resetRes = await fetch('/api/auth/reset-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ studentId: id, newPassword: newPw }),
-      })
-      const resetData = await resetRes.json()
-      if (!resetRes.ok) { setErr(resetData.error || 'Failed to reset password.'); setLoading(false); return }
-      
-      setMsg('Password reset! You can now sign in.')
-      setMode('login')
-      setResetOtpSent(false)
-      setResetOtp('')
-      setNewPw('')
-      setLoading(false)
+    const data = await res.json()
+    if (!res.ok) { setErr(data.error || 'Invalid OTP.'); setLoading(false); return }
+
+    const resetRes = await fetch('/api/auth/reset-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ studentId: id, newPassword: newPw }),
+    })
+    const resetData = await resetRes.json()
+    if (!resetRes.ok) { setErr(resetData.error || 'Failed to reset password.'); setLoading(false); return }
+
+    setMsg('Password reset! You can now sign in.')
+    setMode('login')
+    setResetOtpSent(false)
+    setResetOtp('')
+    setNewPw('')
+    setLoading(false)
   }, [resetOtp, newPw, id])
 
   const inpStyle = (name: string): React.CSSProperties => ({
-    width: '100%',
-    background: 'transparent',
-    border: 'none',
+    width: '100%', background: 'transparent', border: 'none',
     borderBottom: `1px solid ${focused === name ? 'var(--red)' : 'rgba(242,237,228,0.15)'}`,
-    color: 'var(--paper)',
-    fontFamily: 'IBM Plex Mono, monospace',
-    fontSize: '16px',
-    padding: '10px 0',
-    outline: 'none',
-    letterSpacing: '2px',
-    transition: 'border-color .2s',
-    WebkitAppearance: 'none',
+    color: 'var(--paper)', fontFamily: 'IBM Plex Mono, monospace',
+    fontSize: '16px', padding: '10px 0', outline: 'none',
+    letterSpacing: '2px', transition: 'border-color .2s', WebkitAppearance: 'none',
   })
 
   const lbl: React.CSSProperties = {
@@ -244,25 +185,19 @@ export default function LoginPage() {
   }
 
   const subBtn: React.CSSProperties = {
-    width: '100%',
-    background: btnHover ? 'var(--red)' : 'var(--paper)',
-    color: btnHover ? 'var(--paper)' : 'var(--ink)',
-    border: 'none', padding: '16px',
-    fontFamily: 'IBM Plex Mono, monospace',
-    fontSize: '11px', letterSpacing: '3px', textTransform: 'uppercase',
-    fontWeight: 700, marginTop: '8px', transition: 'all .2s',
-    cursor: 'crosshair', opacity: loading ? 0.6 : 1,
+    width: '100%', background: btnHover ? 'var(--red)' : 'var(--paper)',
+    color: btnHover ? 'var(--paper)' : 'var(--ink)', border: 'none', padding: '16px',
+    fontFamily: 'IBM Plex Mono, monospace', fontSize: '11px', letterSpacing: '3px',
+    textTransform: 'uppercase', fontWeight: 700, marginTop: '8px',
+    transition: 'all .2s', cursor: 'crosshair', opacity: loading ? 0.6 : 1,
   }
 
   const secBtn: React.CSSProperties = {
-    width: '100%',
-    background: 'transparent',
-    color: 'var(--faded)',
+    width: '100%', background: 'transparent', color: 'var(--faded)',
     border: '1px solid var(--border)', padding: '12px',
-    fontFamily: 'IBM Plex Mono, monospace',
-    fontSize: '10px', letterSpacing: '2px', textTransform: 'uppercase',
-    fontWeight: 400, marginTop: '8px', transition: 'all .2s',
-    cursor: 'crosshair', opacity: loading ? 0.6 : 1,
+    fontFamily: 'IBM Plex Mono, monospace', fontSize: '10px', letterSpacing: '2px',
+    textTransform: 'uppercase', fontWeight: 400, marginTop: '8px',
+    transition: 'all .2s', cursor: 'crosshair', opacity: loading ? 0.6 : 1,
   }
 
   const tabBtn = (m: string): React.CSSProperties => ({
@@ -302,9 +237,6 @@ export default function LoginPage() {
         .card-left-inner { position: relative; z-index: 1; }
         .card-right { padding: 48px 40px; background: var(--ink); overflow-y: auto; max-height: 90vh; }
         .login-foot { position: fixed; bottom: 0; left: 0; right: 0; padding: 0 40px; height: 38px; display: flex; align-items: center; justify-content: space-between; font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--dim); border-top: 1px solid rgba(0,180,255,0.05); }
-        .otp-input { display: flex; gap: 8px; justify-content: center; margin: 12px 0; }
-        .otp-box { width: 44px; height: 52px; background: var(--ink2); border: 1px solid var(--border); color: var(--paper); font-family: 'IBM Plex Mono', monospace; font-size: 20px; font-weight: 700; text-align: center; outline: none; letter-spacing: 0; transition: border-color .2s; }
-        .otp-box:focus { border-color: var(--red); }
         @media (max-width: 680px) {
           .login-card { grid-template-columns: 1fr; margin-top: 60px; max-width: 100%; }
           .card-left { display: none; }
@@ -363,7 +295,7 @@ export default function LoginPage() {
           <div className="card-right">
             <div style={{ display: 'flex', gap: '2px', marginBottom: '28px' }}>
               {(['login', 'signup', 'reset'] as const).map(m => (
-                <button key={m} onClick={() => { setMode(m); setErr(''); setMsg(''); setOtpSent(false); setResetOtpSent(false) }} style={tabBtn(m)}>
+                <button key={m} onClick={() => { setMode(m); setErr(''); setMsg(''); setResetOtpSent(false) }} style={tabBtn(m)}>
                   {m === 'login' ? 'Sign In' : m === 'signup' ? 'Sign Up' : 'Reset'}
                 </button>
               ))}
@@ -404,86 +336,43 @@ export default function LoginPage() {
                 <div style={{ fontFamily: 'Playfair Display, serif', fontStyle: 'italic', fontSize: '28px', fontWeight: 700, color: 'var(--paper)', marginBottom: '28px', lineHeight: 1.1 }}>
                   Join BRACU<br />Command.
                 </div>
-
-                {!otpSent ? (
-                  <>
-                    {/* Step 1: Fill details */}
-                    <div style={{ fontSize: '9px', color: 'var(--red)', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ width: '18px', height: '18px', borderRadius: '50%', border: '1px solid var(--red)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px' }}>1</span>
-                      Enter your details
-                    </div>
-
-                    <div style={{ marginBottom: '16px' }}>
-                      <label style={lbl}>Student ID</label>
-                      <input type="text" inputMode="numeric" maxLength={8} placeholder="21301234" value={id}
-                        onChange={e => setId(e.target.value)} onFocus={() => setFocused('sid')} onBlur={() => setFocused(null)}
-                        style={inpStyle('sid')} autoComplete="username" />
-                      <div style={{ fontSize: '9px', color: 'var(--dim)', marginTop: '4px' }}>Your 8-digit BRACU student ID</div>
-                    </div>
-
-                    <div style={{ marginBottom: '16px' }}>
-                      <label style={lbl}>BRACU G Suite Email</label>
-                      <input type="email" placeholder="username@g.bracu.ac.bd" value={gsuiteEmail}
-                        onChange={e => setGsuiteEmail(e.target.value)} onFocus={() => setFocused('gsuite')} onBlur={() => setFocused(null)}
-                        style={inpStyle('gsuite')} autoComplete="email" />
-                      <div style={{ fontSize: '9px', color: 'var(--dim)', marginTop: '4px' }}>Must end with @g.bracu.ac.bd — OTP will be sent here</div>
-                    </div>
-
-                    <div style={{ marginBottom: '16px' }}>
-                      <label style={lbl}>Recovery Email <span style={{ color: 'var(--dim)', fontWeight: 400 }}>(optional)</span></label>
-                      <input type="email" placeholder="your.personal@gmail.com" value={recoveryEmail}
-                        onChange={e => setRecoveryEmail(e.target.value)} onFocus={() => setFocused('recovery')} onBlur={() => setFocused(null)}
-                        style={inpStyle('recovery')} autoComplete="email" />
-                      <div style={{ fontSize: '9px', color: 'var(--dim)', marginTop: '4px' }}>Used to reset password if you lose G Suite access</div>
-                    </div>
-
-                    <div style={{ marginBottom: '16px' }}>
-                      <label style={lbl}>Password</label>
-                      <input type="password" placeholder="Min 8 characters" value={pw}
-                        onChange={e => setPw(e.target.value)} onFocus={() => setFocused('spw')} onBlur={() => setFocused(null)}
-                        style={inpStyle('spw')} autoComplete="new-password" />
-                    </div>
-
-                    <div style={{ marginBottom: '20px' }}>
-                      <label style={lbl}>Confirm Password</label>
-                      <input type="password" placeholder="Repeat password" value={pw2}
-                        onChange={e => setPw2(e.target.value)} onFocus={() => setFocused('spw2')} onBlur={() => setFocused(null)}
-                        style={inpStyle('spw2')} autoComplete="new-password" />
-                    </div>
-
-                    <button onClick={sendGsuiteOtp} disabled={loading} style={subBtn}
-                      onMouseEnter={() => setBtnHover(true)} onMouseLeave={() => setBtnHover(false)}>
-                      {loading ? 'Sending OTP...' : 'Send Verification OTP →'}
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    {/* Step 2: Enter OTP */}
-                    <div style={{ fontSize: '9px', color: 'var(--red)', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ width: '18px', height: '18px', borderRadius: '50%', border: '1px solid var(--red)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px' }}>2</span>
-                      Verify your G Suite email
-                    </div>
-
-                    <div style={{ background: 'rgba(0,180,255,0.06)', border: '1px solid var(--border)', padding: '12px 14px', marginBottom: '20px', fontSize: '10px', color: 'var(--faded)' }}>
-                      OTP sent to <span style={{ color: 'var(--red)' }}>{gsuiteEmail}</span>. Check your BRACU inbox.
-                    </div>
-
-                    <div style={{ marginBottom: '20px' }}>
-                      <label style={lbl}>6-Digit OTP</label>
-                      <input type="text" inputMode="numeric" maxLength={6} placeholder="123456" value={otp}
-                        onChange={e => setOtp(e.target.value.replace(/\D/g, ''))} onFocus={() => setFocused('otp')} onBlur={() => setFocused(null)}
-                        style={{ ...inpStyle('otp'), fontSize: '24px', letterSpacing: '8px', textAlign: 'center' }} />
-                    </div>
-
-                    <button onClick={verifyOtpAndSignup} disabled={loading} style={subBtn}
-                      onMouseEnter={() => setBtnHover(true)} onMouseLeave={() => setBtnHover(false)}>
-                      {loading ? 'Verifying...' : 'Verify & Create Account →'}
-                    </button>
-                    <button onClick={() => { setOtpSent(false); setOtp(''); setMsg('') }} style={secBtn}>
-                      ← Change Details
-                    </button>
-                  </>
-                )}
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={lbl}>Student ID</label>
+                  <input type="text" inputMode="numeric" maxLength={8} placeholder="21301234" value={id}
+                    onChange={e => setId(e.target.value)} onFocus={() => setFocused('sid')} onBlur={() => setFocused(null)}
+                    style={inpStyle('sid')} autoComplete="username" />
+                  <div style={{ fontSize: '9px', color: 'var(--dim)', marginTop: '4px' }}>Your 8-digit BRACU student ID</div>
+                </div>
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={lbl}>BRACU G Suite Email</label>
+                  <input type="email" placeholder="username@g.bracu.ac.bd" value={gsuiteEmail}
+                    onChange={e => setGsuiteEmail(e.target.value)} onFocus={() => setFocused('gsuite')} onBlur={() => setFocused(null)}
+                    style={inpStyle('gsuite')} autoComplete="email" />
+                  <div style={{ fontSize: '9px', color: 'var(--dim)', marginTop: '4px' }}>Confirmation link will be sent here</div>
+                </div>
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={lbl}>Recovery Email <span style={{ color: 'var(--dim)', fontWeight: 400 }}>(optional)</span></label>
+                  <input type="email" placeholder="your.personal@gmail.com" value={recoveryEmail}
+                    onChange={e => setRecoveryEmail(e.target.value)} onFocus={() => setFocused('recovery')} onBlur={() => setFocused(null)}
+                    style={inpStyle('recovery')} autoComplete="email" />
+                  <div style={{ fontSize: '9px', color: 'var(--dim)', marginTop: '4px' }}>Used to reset password if you lose G Suite access</div>
+                </div>
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={lbl}>Password</label>
+                  <input type="password" placeholder="Min 8 characters" value={pw}
+                    onChange={e => setPw(e.target.value)} onFocus={() => setFocused('spw')} onBlur={() => setFocused(null)}
+                    style={inpStyle('spw')} autoComplete="new-password" />
+                </div>
+                <div style={{ marginBottom: '20px' }}>
+                  <label style={lbl}>Confirm Password</label>
+                  <input type="password" placeholder="Repeat password" value={pw2}
+                    onChange={e => setPw2(e.target.value)} onFocus={() => setFocused('spw2')} onBlur={() => setFocused(null)}
+                    style={inpStyle('spw2')} autoComplete="new-password" />
+                </div>
+                <button onClick={handleSignup} disabled={loading} style={subBtn}
+                  onMouseEnter={() => setBtnHover(true)} onMouseLeave={() => setBtnHover(false)}>
+                  {loading ? 'Creating Account...' : 'Create Account →'}
+                </button>
               </>
             )}
 
@@ -493,7 +382,6 @@ export default function LoginPage() {
                 <div style={{ fontFamily: 'Playfair Display, serif', fontStyle: 'italic', fontSize: '28px', fontWeight: 700, color: 'var(--paper)', marginBottom: '28px', lineHeight: 1.1 }}>
                   Recover<br />your access.
                 </div>
-
                 {!resetOtpSent ? (
                   <>
                     <div style={{ marginBottom: '20px' }}>
@@ -513,21 +401,18 @@ export default function LoginPage() {
                     <div style={{ background: 'rgba(0,180,255,0.06)', border: '1px solid var(--border)', padding: '12px 14px', marginBottom: '20px', fontSize: '10px', color: 'var(--faded)' }}>
                       OTP sent to your recovery email.
                     </div>
-
                     <div style={{ marginBottom: '16px' }}>
                       <label style={lbl}>6-Digit OTP</label>
                       <input type="text" inputMode="numeric" maxLength={6} placeholder="123456" value={resetOtp}
                         onChange={e => setResetOtp(e.target.value.replace(/\D/g, ''))} onFocus={() => setFocused('rotp')} onBlur={() => setFocused(null)}
                         style={{ ...inpStyle('rotp'), fontSize: '24px', letterSpacing: '8px', textAlign: 'center' }} />
                     </div>
-
                     <div style={{ marginBottom: '20px' }}>
                       <label style={lbl}>New Password</label>
                       <input type="password" placeholder="Min 8 characters" value={newPw}
                         onChange={e => setNewPw(e.target.value)} onFocus={() => setFocused('npw')} onBlur={() => setFocused(null)}
                         style={inpStyle('npw')} autoComplete="new-password" />
                     </div>
-
                     <button onClick={verifyResetOtp} disabled={loading} style={subBtn}
                       onMouseEnter={() => setBtnHover(true)} onMouseLeave={() => setBtnHover(false)}>
                       {loading ? 'Resetting...' : 'Reset Password →'}
