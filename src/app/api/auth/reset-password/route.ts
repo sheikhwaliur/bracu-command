@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     )
 
-    // Get user's gsuite or recovery email
+    // Get user's gsuite email (this is what's in auth.users)
     const { data: user } = await supabase
       .from('users')
       .select('gsuite_email, recovery_email')
@@ -25,17 +25,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    const email = user.gsuite_email || user.recovery_email
+    // Auth user is always linked to gsuite_email
+    const authEmail = user.gsuite_email
 
-    // Find auth user by email
+    // Find auth user by gsuite email
     const { data: authUsers } = await supabase.auth.admin.listUsers()
-    const authUser = authUsers?.users?.find(u => u.email === email)
+    const authUser = authUsers?.users?.find(u => u.email === authEmail)
 
     if (!authUser) {
       return NextResponse.json({ error: 'Auth user not found' }, { status: 404 })
     }
 
-    // Update password using admin API
+    // Update password
     const { error } = await supabase.auth.admin.updateUserById(authUser.id, {
       password: newPassword
     })
