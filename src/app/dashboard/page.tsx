@@ -317,10 +317,17 @@ export default function Dashboard() {
         <div style={s.searchBar}>
           <input style={s.searchInp} placeholder="Search modules..." value={search} onChange={e => setSearch(e.target.value)} />
         </div>
-        <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginBottom: '28px' }}>
-          {CATEGORIES.map(c => (
-            <button key={c} style={catBtn(category === c)} onClick={() => setCategory(c)}>{c}</button>
-          ))}
+
+        {/* macOS pill nav — desktop only */}
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '28px' }}>
+          <div style={{ background: '#080C18', border: '1px solid rgba(0,180,255,0.15)', borderRadius: '40px', padding: '4px', display: 'flex', gap: '2px' }}>
+            {CATEGORIES.filter(c => c !== 'All').map(c => (
+              <button key={c} onClick={() => setCategory(c)}
+                style={{ borderRadius: '30px', padding: '8px 22px', fontFamily: 'IBM Plex Mono,monospace', fontSize: '10px', letterSpacing: '1px', border: 'none', cursor: 'crosshair', transition: 'all .2s', background: category === c ? 'var(--red)' : 'transparent', color: category === c ? 'var(--ink)' : 'var(--faded)', fontWeight: category === c ? 700 : 400 }}>
+                {c}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Tiles Grid */}
