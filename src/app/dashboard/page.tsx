@@ -66,7 +66,7 @@ export default function Dashboard() {
     const id = getStudentId()
     if (!id) { router.push('/login'); return }
     setStudentId(id)
-    setTimeout(() => setAuthDone(true), 600)
+    setTimeout(() => setAuthDone(true), 1000)
   }, [])
 
   useEffect(() => {
