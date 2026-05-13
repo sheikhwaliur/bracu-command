@@ -1,36 +1,41 @@
 import { NextRequest, NextResponse } from 'next/server'
-
-// Simple in-memory OTP store (shared via module-level map)
-const otpStore = new Map<string, { otp: string; expires: number; type: string }>()
-
-export { otpStore }
+import { createClient } from '@supabase/supabase-js'
 
 export async function POST(req: NextRequest) {
   try {
-    const { email, otp, studentId, type } = await req.json()
+    const { otp, studentId, type } = await req.json()
 
     if (!otp || !studentId || !type) {
       return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
     }
 
-    const key = `${studentId}_${type}`
-    const stored = otpStore.get(key)
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
 
-    if (!stored) {
+    const { data, error } = await supabase
+      .from('otp_store')
+      .select('*')
+      .eq('student_id', studentId)
+      .eq('type', type)
+      .single()
+
+    if (error || !data) {
       return NextResponse.json({ error: 'OTP expired or not found. Request a new one.' }, { status: 400 })
     }
 
-    if (Date.now() > stored.expires) {
-      otpStore.delete(key)
+    if (new Date(data.expires_at) < new Date()) {
+      await supabase.from('otp_store').delete().eq('student_id', studentId).eq('type', type)
       return NextResponse.json({ error: 'OTP expired. Request a new one.' }, { status: 400 })
     }
 
-    if (stored.otp !== otp) {
+    if (data.otp !== otp) {
       return NextResponse.json({ error: 'Incorrect OTP. Please try again.' }, { status: 400 })
     }
 
-    // OTP valid — delete it so it can't be reused
-    otpStore.delete(key)
+    // Delete used OTP
+    await supabase.from('otp_store').delete().eq('student_id', studentId).eq('type', type)
 
     return NextResponse.json({ success: true })
   } catch (err) {

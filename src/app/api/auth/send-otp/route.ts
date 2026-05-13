@@ -1,10 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-
-const otpStore = new Map<string, { otp: string; expires: number }>()
-
-function generateOTP(): string {
-  return Math.floor(100000 + Math.random() * 900000).toString()
-}
+import { createClient } from '@supabase/supabase-js'
 
 export async function POST(req: NextRequest) {
   try {
@@ -18,10 +13,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Must use @g.bracu.ac.bd email' }, { status: 400 })
     }
 
-    const otp = generateOTP()
-    otpStore.set(`${studentId}_${type}`, { otp, expires: Date.now() + 10 * 60 * 1000 })
+    const otp = Math.floor(100000 + Math.random() * 900000).toString()
 
-    // Send via Brevo API directly
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+
+    // Store OTP in Supabase
+    await supabase.from('otp_store').delete().eq('student_id', studentId).eq('type', type)
+    await supabase.from('otp_store').insert({
+      student_id: studentId,
+      otp,
+      type,
+      expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
+    })
+
+    // Send via Brevo API
     const res = await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
       headers: {
@@ -58,5 +66,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
 }
-
-export { otpStore }
