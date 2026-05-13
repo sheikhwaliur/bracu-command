@@ -51,7 +51,7 @@ export default function USISPage() {
   const [sort, setSort] = useState<'code' | 'available' | 'faculty'>('code')
   const [selected, setSelected] = useState<Course | null>(null)
   const [lastRefresh, setLastRefresh] = useState(0)
-  const [countdown, setCountdown] = useState(30)
+  const [countdown, setCountdown] = useState(60)
   const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
