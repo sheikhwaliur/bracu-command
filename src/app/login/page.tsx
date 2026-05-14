@@ -1,349 +1,441 @@
 'use client'
-import { useState, useCallback } from 'react'
-import { supabase } from '@/lib/supabase'
-import { checkRateLimit } from '@/lib/rateLimit'
+import { useState, useEffect } from 'react'
+import { getStudentId } from '@/lib/session'
 import { useRouter } from 'next/navigation'
 
-export default function LoginPage() {
+
+const TILES = [
+  { id: 'resources', num: '01', icon: '📚', name: 'Resource Archive', desc: 'Past papers, notes, Drive links, YouTube — community rated.', tag: '// resource.cmd', status: 'live', category: 'Academic' },
+  { id: 'faculty', num: '02', icon: '⭐', name: 'Faculty Intelligence', desc: 'Real BRACU faculty reviews — anonymous, verified students only.', tag: '// faculty.cmd', status: 'live', category: 'Academic' },
+  { id: 'ai', num: '03', icon: '🤖', name: 'AI Engine', desc: 'Ask anything academic — topics, past papers, assignments, routines.', tag: '// ai.cmd', status: 'live', category: 'Academic' },
+  { id: 'usis', num: '04', icon: '🪑', name: 'Live USIS Seats', desc: 'Real-time course seat availability. Refreshes every 60 seconds.', tag: '// usis.live', status: 'live', category: 'Academic' },
+  { id: 'routine', num: '05', icon: '🗓️', name: 'Routine Builder', desc: 'Build your routine with live USIS data. Conflict detection included.', tag: '// routine.builder', status: 'live', category: 'Academic' },
+  { id: 'cgpa', num: '06', icon: '📊', name: 'CGPA Calculator', desc: 'Enter your grades and get your CGPA instantly.', tag: '// cgpa.cmd', status: 'live', category: 'Academic' },
+  { id: 'credits', num: '07', icon: '🎯', name: 'Credit Tracker', desc: 'Track credits done vs remaining. Know when you graduate.', tag: '// credits.cmd', status: 'live', category: 'Academic' },
+  { id: 'planner', num: '08', icon: '📋', name: 'Course Planner', desc: 'Plan all semesters until graduation. Visual roadmap.', tag: '// planner.cmd', status: 'live', category: 'Academic' },
+  { id: 'countdown', num: '09', icon: '📅', name: 'Exam Countdown', desc: 'Days left until midterm and final. Never miss a deadline.', tag: '// countdown.cmd', status: 'live', category: 'Academic' },
+  { id: 'deadlines', num: '10', icon: '📝', name: 'Deadline Tracker', desc: 'Add assignment deadlines. Get reminders before they hit.', tag: '// deadlines.cmd', status: 'live', category: 'Academic' },
+  { id: 'leaderboard', num: '11', icon: '🏆', name: 'Leaderboard', desc: 'Top resource contributors. Recognition for helping others.', tag: '// leaderboard.cmd', status: 'live', category: 'Community' },
+  { id: 'confessions', num: '12', icon: '💬', name: 'Confession Board', desc: 'Anonymous BRACU student experiences and confessions.', tag: '// confess.cmd', status: 'live', category: 'Community' },
+  { id: 'studygroups', num: '13', icon: '🤝', name: 'Study Groups', desc: 'Find students taking the same courses. Form study groups.', tag: '// groups.cmd', status: 'live', category: 'Community' },
+  { id: 'noticeboard', num: '14', icon: '📣', name: 'Notice Board', desc: 'Important BRACU announcements and student notices.', tag: '// notices.cmd', status: 'live', category: 'Community' },
+  { id: 'courserating', num: '15', icon: '🗳️', name: 'Course Ratings', desc: 'Rate courses not just faculty. Know what to expect.', tag: '// courses.cmd', status: 'live', category: 'Community' },
+  { id: 'mentorship', num: '16', icon: '🗺️', name: 'Mentorship', desc: 'Senior roadmaps and direct mentorship via email or WhatsApp.', tag: '// mentor.cmd', status: 'live', category: 'Community' },
+  { id: 'discussions', num: '17', icon: '💭', name: 'Discussions', desc: 'Course-specific Q&A. Answers from students who took it.', tag: '// discuss.cmd', status: 'live', category: 'Community' },
+  { id: 'resume', num: '18', icon: '📄', name: 'AI Resume Builder', desc: 'AI builds your CV based on your courses and experience.', tag: '// resume.cmd', status: 'live', category: 'AI Tools' },
+  { id: 'interview', num: '19', icon: '🎤', name: 'Interview Prep', desc: 'AI asks you real interview questions. Practice and improve.', tag: '// interview.cmd', status: 'live', category: 'AI Tools' },
+  { id: 'flashcards', num: '20', icon: '📖', name: 'Flashcard Generator', desc: 'AI makes flashcards from your notes. Study smarter.', tag: '// flashcards.cmd', status: 'live', category: 'AI Tools' },
+  { id: 'mockexam', num: '21', icon: '🧪', name: 'Mock Exam Generator', desc: 'AI creates practice exams from past papers. Exam-ready.', tag: '// mockexam.cmd', status: 'live', category: 'AI Tools' },
+  { id: 'career', num: '22', icon: '💡', name: 'Career Path Advisor', desc: 'AI maps your career path based on courses and interests.', tag: '// career.cmd', status: 'live', category: 'AI Tools' },
+  { id: 'map', num: '23', icon: '🗺️', name: 'Campus Map', desc: 'Interactive BRACU campus map. Find buildings and rooms.', tag: '// map.cmd', status: 'live', category: 'Utility' },
+  { id: 'bus', num: '24', icon: '🚌', name: 'Bus Schedule', desc: 'BRACU bus timings and routes. Never miss your bus.', tag: '// bus.cmd', status: 'live', category: 'Utility' },
+  { id: 'links', num: '25', icon: '🌐', name: 'Useful Links', desc: 'All important BRACU portals — USIS, email, library and more.', tag: '// links.cmd', status: 'live', category: 'Utility' },
+  { id: 'security', num: '26', icon: '🔒', name: 'Security', desc: 'Full security architecture. Every layer explained.', tag: '// security.cmd', status: 'live', category: 'System' },
+  { id: 'stack', num: '27', icon: '⚙️', name: 'Tech Stack', desc: 'Full technical architecture. $0/month. Built to scale.', tag: '// stack.cmd', status: 'live', category: 'System' },
+]
+
+const CATEGORIES = ['All', 'Academic', 'Community', 'AI Tools', 'Utility', 'System']
+
+const BOTTOM_TABS = [
+  { id: 'Academic', icon: '🎓', label: 'Academic' },
+  { id: 'AI Tools', icon: '🤖', label: 'AI Tools' },
+  { id: 'Community', icon: '👥', label: 'Community' },
+  { id: 'Utility', icon: '🔧', label: 'Utility' },
+  { id: 'System', icon: '⚙️', label: 'System' },
+]
+
+export default function Dashboard() {
   const router = useRouter()
-  const [mode, setMode] = useState<'login' | 'signup' | 'reset'>('login')
-  const [id, setId] = useState('')
-  const [pw, setPw] = useState('')
-  const [pw2, setPw2] = useState('')
-  const [gsuiteEmail, setGsuiteEmail] = useState('')
-  const [recoveryEmail, setRecoveryEmail] = useState('')
-  const [resetOtp, setResetOtp] = useState('')
-  const [resetOtpSent, setResetOtpSent] = useState(false)
-  const [newPw, setNewPw] = useState('')
-  const [err, setErr] = useState('')
-  const [msg, setMsg] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [focused, setFocused] = useState<string | null>(null)
-  const [btnHover, setBtnHover] = useState(false)
+  const [studentId, setStudentId] = useState('')
+  const [search, setSearch] = useState('')
+  const [category, setCategory] = useState('Academic')
+  const [timer, setTimer] = useState(60)
+  const [hoveredTile, setHoveredTile] = useState<string | null>(null)
+  const [showTop, setShowTop] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+  const [authDone, setAuthDone] = useState(false)
 
-  const validateBracuId = (studentId: string) => {
-    if (!/^\d{8}$/.test(studentId)) return 'Student ID must be exactly 8 digits.'
-    const year = parseInt(studentId.substring(0, 2))
-    if (year < 15 || year > 27) return 'Invalid year in Student ID.'
-    return null
-  }
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
 
-  const handleSignup = useCallback(async () => {
-    const idErr = validateBracuId(id)
-    if (idErr) { setErr(idErr); return }
-    if (!gsuiteEmail.endsWith('@g.bracu.ac.bd')) { setErr('Must use your BRACU G Suite email (@g.bracu.ac.bd)'); return }
-    if (pw.length < 8) { setErr('Password must be at least 8 characters.'); return }
-    if (pw !== pw2) { setErr('Passwords do not match.'); return }
-    setErr(''); setLoading(true)
-    const { data: existing } = await supabase.from('users').select('student_id').eq('student_id', id).single()
-    if (existing) { setErr('Student ID already registered. Please sign in.'); setLoading(false); return }
-    const { data: signUpData, error: authError } = await supabase.auth.signUp({ email: gsuiteEmail, password: pw })
-    if (authError) { setErr(authError.message); setLoading(false); return }
-    await supabase.from('users').insert({ student_id: id, password_hash: 'supabase_auth', recovery_email: recoveryEmail || gsuiteEmail, gsuite_email: gsuiteEmail, auth_uid: signUpData?.user?.id })
-    setMsg('Account created! Check your BRACU G Suite inbox and click the confirmation link to activate your account.')
-    setMode('login'); setLoading(false)
-  }, [id, gsuiteEmail, recoveryEmail, pw, pw2])
+  useEffect(() => {
+    const id = getStudentId()
+    if (!id) { router.push('/login'); return }
+    setStudentId(id)
+    setTimeout(() => setAuthDone(true), 700)
+  }, [])
 
-  const handleLogin = useCallback(async () => {
-    const { allowed, waitSeconds } = checkRateLimit({ key: 'login', limitMs: 300000, maxAttempts: 10 })
-    if (!allowed) { setErr(`Too many attempts. Wait ${waitSeconds}s.`); return }
-    const idErr = validateBracuId(id)
-    if (idErr) { setErr(idErr); return }
-    if (pw.length < 6) { setErr('Password must be at least 6 characters.'); return }
-    setErr(''); setLoading(true)
-    const { data: user, error: userError } = await supabase.from('users').select('recovery_email, gsuite_email, password_hash').eq('student_id', id).single()
-    if (userError || !user) { setErr('Student ID not found. Please sign up.'); setLoading(false); return }
-    const loginEmail = user.gsuite_email || user.recovery_email
-    if (loginEmail) {
-      const { error: authError } = await supabase.auth.signInWithPassword({ email: loginEmail, password: pw })
-      if (authError) { setErr('Incorrect password.'); setLoading(false); return }
-    }
-    const res = await fetch('/api/auth/session', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ studentId: id }) })
-    if (res.ok) { router.push('/dashboard') } else { setErr('Session error. Please try again.') }
-    setLoading(false)
-  }, [id, pw])
+  useEffect(() => {
+    const iv = setInterval(() => setTimer(p => p <= 0 ? 60 : p - 1), 1000)
+    return () => clearInterval(iv)
+  }, [])
 
-  const sendResetOtp = useCallback(async () => {
-    const idErr = validateBracuId(id)
-    if (idErr) { setErr(idErr); return }
-    setErr(''); setLoading(true)
-    const { data: user } = await supabase.from('users').select('recovery_email, gsuite_email').eq('student_id', id).single()
-    if (!user) { setErr('Student ID not found.'); setLoading(false); return }
-    const resetTo = user.recovery_email || user.gsuite_email
-    const res = await fetch('/api/auth/send-otp', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: resetTo, studentId: id, type: 'reset' }) })
-    const data = await res.json()
-    if (!res.ok) { setErr(data.error || 'Failed to send OTP.'); setLoading(false); return }
-    setResetOtpSent(true)
-    setMsg(`OTP sent to ${resetTo.replace(/(.{2}).*(@.*)/, '$1***$2')}`)
-    setLoading(false)
-  }, [id])
+  useEffect(() => {
+    const onScroll = () => setShowTop(window.scrollY > 400)
+    window.addEventListener('scroll', onScroll)
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
 
-  const verifyResetOtp = useCallback(async () => {
-    if (!resetOtp || resetOtp.length !== 6) { setErr('Enter the 6-digit OTP.'); return }
-    if (newPw.length < 8) { setErr('New password must be at least 8 characters.'); return }
-    setErr(''); setLoading(true)
-    const { data: user } = await supabase.from('users').select('recovery_email, gsuite_email').eq('student_id', id).single()
-    const resetTo = user?.recovery_email || user?.gsuite_email
-    const res = await fetch('/api/auth/verify-otp', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: resetTo, otp: resetOtp, studentId: id, type: 'reset' }) })
-    const data = await res.json()
-    if (!res.ok) { setErr(data.error || 'Invalid OTP.'); setLoading(false); return }
-    const resetRes = await fetch('/api/auth/reset-password', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ studentId: id, newPassword: newPw }) })
-    const resetData = await resetRes.json()
-    if (!resetRes.ok) { setErr(resetData.error || 'Failed to reset password.'); setLoading(false); return }
-    setMsg('Password reset! You can now sign in.')
-    setMode('login'); setResetOtpSent(false); setResetOtp(''); setNewPw(''); setLoading(false)
-  }, [resetOtp, newPw, id])
-
-  const inpStyle = (name: string): React.CSSProperties => ({
-    width: '100%', background: '#F6FAF7', border: '1px solid',
-    borderColor: focused === name ? '#5C8C6A' : '#D0E2D4',
-    color: '#162018', fontFamily: 'DM Sans, sans-serif',
-    fontSize: '14px', padding: '10px 12px', outline: 'none', borderRadius: '3px',
-    letterSpacing: '0.3px', transition: 'border-color .2s',
+  const filtered = TILES.filter(t => {
+    const matchCat = category === 'All' || t.category === category
+    const matchSearch = !search || t.name.toLowerCase().includes(search.toLowerCase()) || t.desc.toLowerCase().includes(search.toLowerCase())
+    return matchCat && matchSearch
   })
 
-  const lbl: React.CSSProperties = {
-    fontSize: '10px', letterSpacing: '0.12em', textTransform: 'uppercase',
-    color: '#5C8C6A', display: 'block', marginBottom: '8px', fontWeight: 600, fontFamily: 'DM Sans, sans-serif',
-  }
-
-  const subBtn: React.CSSProperties = {
-    width: '100%', background: btnHover ? '#4A7A58' : '#5C8C6A', color: '#F0F7F2',
-    border: 'none', padding: '13px', borderRadius: '3px', fontFamily: 'DM Sans, sans-serif',
-    fontSize: '12px', letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 600,
-    marginTop: '8px', transition: 'all .2s', cursor: 'pointer', opacity: loading ? 0.6 : 1,
-  }
-
-  const secBtn: React.CSSProperties = {
-    width: '100%', background: 'transparent', color: '#6B7F6E', border: '1px solid #D0E2D4',
-    padding: '12px', fontFamily: 'DM Sans, sans-serif', cursor: 'pointer', borderRadius: '3px',
-    textTransform: 'uppercase', fontSize: '11px', fontWeight: 400, marginTop: '8px', transition: 'all .2s',
-  }
-
-  const tabBtn = (m: string): React.CSSProperties => ({
-    flex: 1, padding: '10px',
-    background: mode === m ? '#5C8C6A' : 'transparent',
-    color: mode === m ? '#F0F7F2' : '#6B7F6E',
-    border: `1px solid ${mode === m ? '#5C8C6A' : '#D0E2D4'}`,
-    fontSize: '10px', letterSpacing: '0.08em', textTransform: 'uppercase',
-    fontFamily: 'DM Sans, sans-serif', transition: 'all .2s', cursor: 'pointer', borderRadius: '3px',
+  const catBtn = (active: boolean): React.CSSProperties => ({
+    background: active ? 'var(--red)' : 'transparent',
+    color: active ? '#F0F7F2' : 'var(--faded)',
+    border: `1px solid ${active ? 'var(--red)' : 'var(--border)'}`,
+    padding: '8px 14px', fontSize: '9px', letterSpacing: '1.5px',
+    textTransform: 'uppercase', fontFamily: 'DM Sans,sans-serif',
+    cursor: 'pointer', transition: 'all .15s', whiteSpace: 'nowrap',
   })
 
-  return (
-    <>
+  const tileStyle = (id: string): React.CSSProperties => ({
+    background: hoveredTile === id ? '#EDF5EF' : '#FFFFFF',
+    padding: '28px', cursor: 'pointer', position: 'relative',
+    overflow: 'hidden', transition: 'background .2s', display: 'flex',
+    flexDirection: 'column', border: '1px solid #D0E2D4', textAlign: 'left',
+    color: 'var(--ink)', fontFamily: 'DM Sans,sans-serif', width: '100%',
+  })
+
+  const mobileTileStyle = (id: string): React.CSSProperties => ({
+    background: hoveredTile === id ? '#EDF5EF' : '#FFFFFF',
+    padding: '16px', cursor: 'pointer', position: 'relative',
+    overflow: 'hidden', transition: 'background .2s', display: 'flex',
+    flexDirection: 'column', border: '1px solid #D0E2D4',
+    borderRadius: '8px', textAlign: 'left',
+    color: 'var(--ink)', fontFamily: 'DM Sans,sans-serif', width: '100%',
+  })
+
+  const s: { [key: string]: React.CSSProperties } = {
+    page: { minHeight: '100vh', background: 'var(--paper)', color: 'var(--ink)', fontFamily: 'DM Sans,sans-serif' },
+    nav: { position: 'fixed', top: 0, left: 0, right: 0, height: '52px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 40px', background: 'rgba(246,250,247,0.95)', backdropFilter: 'blur(16px)', borderBottom: '1px solid var(--border)', zIndex: 500 },
+    wrap: { maxWidth: '1200px', margin: '0 auto', padding: '0 40px' },
+    hero: { padding: '80px 0 40px', borderBottom: '1px solid var(--border)', display: 'grid', gridTemplateColumns: '1fr auto', gap: '32px', alignItems: 'end' },
+    h1: { fontFamily: 'Cormorant Garamond,serif', fontSize: 'clamp(36px,4.5vw,56px)', letterSpacing: '1px', lineHeight: '1', color: 'var(--ink)', fontWeight: 700 },
+    sub: { fontSize: '11px', color: 'var(--faded)', marginTop: '8px', letterSpacing: '.5px', lineHeight: '1.8' },
+    seatBox: { background: 'var(--ink2)', border: '1px solid var(--border)', padding: '14px 20px', textAlign: 'right', minWidth: '180px' },
+    searchBar: { display: 'flex', gap: '8px', margin: '28px 0 20px', alignItems: 'center' },
+    searchInp: { flex: 1, background: '#FFFFFF', border: '1px solid var(--border)', color: 'var(--ink)', fontFamily: 'DM Sans,sans-serif', fontSize: '12px', padding: '10px 16px', outline: 'none', letterSpacing: '.5px', borderRadius: '3px' },
+    grid: { display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '8px', background: 'transparent' } as React.CSSProperties,
+    backTop: { position: 'fixed', bottom: '32px', right: '32px', background: 'var(--red)', color: '#F0F7F2', border: 'none', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', cursor: 'pointer', zIndex: 400, transition: 'all .2s', borderRadius: '3px' },
+  }
+
+  if (!authDone) return (
+    <div style={{ minHeight: '100vh', background: '#F6FAF7', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,700;1,400;1,700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap');
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; cursor: crosshair; }
-        :root { --ink: #162018; --ink2: #EDF5EF; --paper: #F6FAF7; --red: #5C8C6A; --faded: #6B7F6E; --dim: #8FAA92; --bronze: #5C8C6A; --border: #D0E2D4; }
-        html, body { height: 100%; background: var(--paper); color: var(--ink); font-family: 'DM Sans', sans-serif; }
-        input::placeholder { color: #8FAA92; font-size: 13px; }
-        input:focus { outline: none; }
-        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.2} }
-        @keyframes rise { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
-        .login-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; background: var(--paper); position: relative; overflow: hidden; }
-        .bg-word { position: fixed; font-family: 'Cormorant Garamond', serif; color: rgba(92,140,106,0.05); letter-spacing: 12px; pointer-events: none; user-select: none; z-index: 0; line-height: 1; }
-        .login-nav { position: fixed; top: 0; left: 0; right: 0; height: 52px; display: flex; align-items: center; justify-content: space-between; padding: 0 40px; z-index: 100; background: rgba(246,250,247,0.95); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
-        .login-card { position: relative; z-index: 10; width: 100%; max-width: 880px; display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--border); margin-top: 52px; animation: rise .7s ease both; box-shadow: 0 4px 24px rgba(22,32,24,0.06); }
-        .card-left { padding: 48px 40px; border-right: 1px solid var(--border); background: #162018; position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; }
-        .card-left::before { content: ''; position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(0deg, transparent, transparent 27px, rgba(92,140,106,0.04) 27px, rgba(92,140,106,0.04) 28px); }
-        .card-left-inner { position: relative; z-index: 1; }
-        .card-right { padding: 48px 40px; background: var(--paper); overflow-y: auto; max-height: 90vh; }
-        .login-foot { position: fixed; bottom: 0; left: 0; right: 0; padding: 0 40px; height: 38px; display: flex; align-items: center; justify-content: space-between; font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--dim); border-top: 1px solid var(--border); background: var(--paper); font-family: 'DM Mono', monospace; }
-        @media (max-width: 680px) {
-          .login-card { grid-template-columns: 1fr; margin-top: 60px; max-width: 100%; }
-          .card-left { display: none; }
-          .card-right { padding: 32px 24px; max-height: none; }
-          .login-nav { padding: 0 20px; }
-          .login-foot { padding: 0 20px; font-size: 8px; }
-          .login-page { padding: 16px; align-items: flex-start; padding-top: 72px; }
-        }
+        @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        :root { --ink: #162018; --red: #5C8C6A; --paper: #F6FAF7; --faded: #6B7F6E; }
       `}</style>
 
-      <div className="login-page">
-        <div className="bg-word" style={{ bottom: '-40px', left: '-20px', fontSize: 'clamp(160px,24vw,340px)' }}>CMD</div>
-        <div className="bg-word" style={{ top: '-20px', right: '-40px', fontSize: 'clamp(70px,10vw,140px)', letterSpacing: '6px', opacity: .5 }}>BRACU</div>
+      {/* Top line */}
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '1px', background: 'linear-gradient(90deg,transparent,#5C8C6A,transparent)' }} />
+      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '1px', background: 'linear-gradient(90deg,transparent,rgba(92,140,106,0.2),transparent)' }} />
 
-        <nav className="login-nav">
-          <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '20px', letterSpacing: '4px', color: '#162018', fontWeight: 700 }}>
-            BRACU<span style={{ color: '#5C8C6A' }}>/</span>CMD
+      {/* Ghost text */}
+      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', pointerEvents: 'none' }}>
+        <div style={{ fontFamily: 'Cormorant Garamond,serif', fontSize: 'clamp(120px,22vw,200px)', fontWeight: 700, color: 'rgba(92,140,106,0.08)', userSelect: 'none', letterSpacing: '-8px' }}>CMD</div>
+      </div>
+
+      {/* Content */}
+      <div style={{ position: 'relative', textAlign: 'center', animation: 'fadeIn 0.3s ease-out' }}>
+        <div style={{ fontFamily: 'Cormorant Garamond,serif', fontSize: '22px', fontWeight: 700, color: '#162018', letterSpacing: '8px', marginBottom: '6px' }}>
+          BRACU<span style={{ color: '#5C8C6A' }}>/</span>CMD
+        </div>
+        <div style={{ fontFamily: 'DM Mono,monospace', fontSize: '9px', color: '#6B7F6E', letterSpacing: '4px', marginBottom: '40px' }}>
+          CLASSIFIED — STUDENTS ONLY
+        </div>
+        <div style={{ fontFamily: 'DM Mono,monospace', fontSize: '9px', color: '#5C8C6A', letterSpacing: '3px' }}>
+          AUTHENTICATING
+        </div>
+      </div>
+    </div>
+  )
+
+  // Mobile layout
+  if (isMobile) {
+    return (
+      <div style={{ ...s.page, paddingBottom: '70px' }}>
+        {/* Nav */}
+        <nav style={{ ...s.nav, padding: '0 16px' }}>
+          <div style={{ fontFamily: 'Cormorant Garamond,serif', fontSize: '18px', letterSpacing: '3px', fontWeight: 700, color: 'var(--ink)' }}>
+            BRACU<span style={{ color: 'var(--red)' }}>/</span>CMD
+            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--red)', display: 'inline-block', marginLeft: '6px', verticalAlign: 'middle' }} />
+            <span style={{ fontSize: '9px', letterSpacing: '2px', color: 'var(--faded)', marginLeft: '4px', verticalAlign: 'middle' }}>ONLINE</span>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '10px', letterSpacing: '2px', textTransform: 'uppercase', color: '#6B7F6E', fontFamily: 'DM Mono, monospace' }}>
-            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#5C8C6A', display: 'inline-block', animation: 'pulse 2.5s step-end infinite' }} />
-            System Online
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <span style={{ fontSize: '9px', color: 'var(--faded)', border: '1px solid var(--border)', padding: '4px 8px', borderRadius: '3px' }}>ID: {studentId}</span>
+            <button onClick={async () => { await fetch('/api/auth/session', { method: 'DELETE' }); router.push('/login') }}
+              style={{ fontSize: '9px', letterSpacing: '1.5px', textTransform: 'uppercase', background: 'none', border: 'none', color: 'var(--faded)', cursor: 'pointer', fontFamily: 'DM Sans,sans-serif' }}>
+              SIGN OUT
+            </button>
           </div>
         </nav>
 
-        <div className="login-card">
-          <div style={{ position: 'absolute', top: '-1px', left: '60px', right: '60px', height: '2px', background: 'linear-gradient(90deg,transparent,#5C8C6A,transparent)', zIndex: 1 }} />
-
-          {/* LEFT — dark green bg */}
-          <div className="card-left">
-            <div className="card-left-inner">
-              <div style={{ display: 'inline-block', fontSize: '8px', letterSpacing: '3px', textTransform: 'uppercase', color: 'rgba(240,247,242,0.5)', border: '1px solid rgba(92,140,106,0.3)', padding: '3px 9px', marginBottom: '24px', fontWeight: 600, fontFamily: 'DM Mono, monospace' }}>
-                Classified — Students Only
-              </div>
-              <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(40px,5vw,64px)', lineHeight: 0.9, letterSpacing: '2px', color: '#F0F7F2', fontWeight: 700 }}>ACADEMIC</div>
-              <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(18px,2.2vw,28px)', letterSpacing: '3px', color: '#5C8C6A', marginBottom: '22px' }}>COMMAND</div>
-              <p style={{ fontSize: '11px', color: '#6B7F6E', lineHeight: 1.9, borderLeft: '2px solid rgba(92,140,106,0.3)', paddingLeft: '14px', marginBottom: '28px', maxWidth: '260px', fontFamily: 'DM Sans, sans-serif' }}>
-                Study resources, professor intelligence, AI-powered advising, live USIS seat data — built for every BRACU student, forever.
-              </p>
-              {['Resource archive & past papers', 'Faculty intelligence board', 'AI engine — ask anything', 'Live USIS seat data', 'CGPA & credit tracker', 'AI resume & interview prep', 'Study groups & mentorship'].map((f, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '7px 0', borderBottom: '1px solid rgba(92,140,106,0.1)', fontSize: '10px', color: '#6B7F6E', letterSpacing: '.3px', fontFamily: 'DM Sans, sans-serif' }}>
-                  <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#5C8C6A', flexShrink: 0 }} />{f}
-                </div>
-              ))}
-            </div>
-            <div style={{ position: 'relative', zIndex: 1, marginTop: '24px', fontSize: '9px', letterSpacing: '2px', textTransform: 'uppercase', color: 'rgba(92,140,106,0.35)', lineHeight: 2, fontFamily: 'DM Mono, monospace' }}>
-              BRAC University // Dhaka, Bangladesh
-            </div>
-          </div>
-
-          {/* RIGHT */}
-          <div className="card-right">
-            <div style={{ display: 'flex', gap: '4px', marginBottom: '28px' }}>
-              {(['login', 'signup', 'reset'] as const).map(m => (
-                <button key={m} onClick={() => { setMode(m); setErr(''); setMsg(''); setResetOtpSent(false) }} style={tabBtn(m)}>
-                  {m === 'login' ? 'Sign In' : m === 'signup' ? 'Sign Up' : 'Reset'}
-                </button>
-              ))}
-            </div>
-
-            {msg && <div style={{ background: 'rgba(92,140,106,0.08)', border: '1px solid rgba(92,140,106,0.25)', color: '#5C8C6A', padding: '10px 14px', fontSize: '11px', marginBottom: '20px', borderRadius: '3px' }}>✓ {msg}</div>}
-            {err && <div style={{ background: 'rgba(180,30,30,0.05)', border: '1px solid rgba(180,30,30,0.2)', color: '#b41e1e', padding: '10px 14px', fontSize: '11px', marginBottom: '20px', borderRadius: '3px' }}>✗ {err}</div>}
-
-            {/* LOGIN */}
-            {mode === 'login' && (
-              <>
-                <div style={{ fontFamily: 'Cormorant Garamond, serif', fontStyle: 'italic', fontSize: '28px', fontWeight: 700, color: '#162018', marginBottom: '28px', lineHeight: 1.1 }}>
-                  Sign in to<br />the system.
-                </div>
-                <div style={{ marginBottom: '20px' }}>
-                  <label style={lbl}>Student ID</label>
-                  <input type="text" inputMode="numeric" maxLength={8} placeholder="21301234" value={id}
-                    onChange={e => setId(e.target.value)} onFocus={() => setFocused('id')} onBlur={() => setFocused(null)}
-                    onKeyDown={e => e.key === 'Enter' && handleLogin()} style={inpStyle('id')} autoComplete="username" />
-                  <div style={{ fontSize: '9px', color: '#8FAA92', marginTop: '5px' }}>Your 8-digit BRACU student ID</div>
-                </div>
-                <div style={{ marginBottom: '20px' }}>
-                  <label style={lbl}>Password</label>
-                  <input type="password" placeholder="••••••••" value={pw}
-                    onChange={e => setPw(e.target.value)} onFocus={() => setFocused('pw')} onBlur={() => setFocused(null)}
-                    onKeyDown={e => e.key === 'Enter' && handleLogin()} style={inpStyle('pw')} autoComplete="current-password" />
-                </div>
-                <button onClick={handleLogin} disabled={loading} style={subBtn}
-                  onMouseEnter={() => setBtnHover(true)} onMouseLeave={() => setBtnHover(false)}>
-                  {loading ? 'Authenticating...' : 'Authenticate →'}
-                </button>
-              </>
-            )}
-
-            {/* SIGNUP */}
-            {mode === 'signup' && (
-              <>
-                <div style={{ fontFamily: 'Cormorant Garamond, serif', fontStyle: 'italic', fontSize: '28px', fontWeight: 700, color: '#162018', marginBottom: '28px', lineHeight: 1.1 }}>
-                  Join BRACU<br />Command.
-                </div>
-                <div style={{ marginBottom: '16px' }}>
-                  <label style={lbl}>Student ID</label>
-                  <input type="text" inputMode="numeric" maxLength={8} placeholder="21301234" value={id}
-                    onChange={e => setId(e.target.value)} onFocus={() => setFocused('sid')} onBlur={() => setFocused(null)}
-                    style={inpStyle('sid')} autoComplete="username" />
-                  <div style={{ fontSize: '9px', color: '#8FAA92', marginTop: '4px' }}>Your 8-digit BRACU student ID</div>
-                </div>
-                <div style={{ marginBottom: '16px' }}>
-                  <label style={lbl}>BRACU G Suite Email</label>
-                  <input type="email" placeholder="username@g.bracu.ac.bd" value={gsuiteEmail}
-                    onChange={e => setGsuiteEmail(e.target.value)} onFocus={() => setFocused('gsuite')} onBlur={() => setFocused(null)}
-                    style={inpStyle('gsuite')} autoComplete="email" />
-                  <div style={{ fontSize: '9px', color: '#8FAA92', marginTop: '4px' }}>Confirmation link will be sent here</div>
-                </div>
-                <div style={{ marginBottom: '16px' }}>
-                  <label style={lbl}>Recovery Email <span style={{ color: '#8FAA92', fontWeight: 400 }}>(optional)</span></label>
-                  <input type="email" placeholder="your.personal@gmail.com" value={recoveryEmail}
-                    onChange={e => setRecoveryEmail(e.target.value)} onFocus={() => setFocused('recovery')} onBlur={() => setFocused(null)}
-                    style={inpStyle('recovery')} autoComplete="email" />
-                  <div style={{ fontSize: '9px', color: '#8FAA92', marginTop: '4px' }}>Used to reset password if you lose G Suite access</div>
-                </div>
-                <div style={{ marginBottom: '16px' }}>
-                  <label style={lbl}>Password</label>
-                  <input type="password" placeholder="Min 8 characters" value={pw}
-                    onChange={e => setPw(e.target.value)} onFocus={() => setFocused('spw')} onBlur={() => setFocused(null)}
-                    style={inpStyle('spw')} autoComplete="new-password" />
-                </div>
-                <div style={{ marginBottom: '20px' }}>
-                  <label style={lbl}>Confirm Password</label>
-                  <input type="password" placeholder="Repeat password" value={pw2}
-                    onChange={e => setPw2(e.target.value)} onFocus={() => setFocused('spw2')} onBlur={() => setFocused(null)}
-                    style={inpStyle('spw2')} autoComplete="new-password" />
-                </div>
-                <button onClick={handleSignup} disabled={loading} style={subBtn}
-                  onMouseEnter={() => setBtnHover(true)} onMouseLeave={() => setBtnHover(false)}>
-                  {loading ? 'Creating Account...' : 'Create Account →'}
-                </button>
-              </>
-            )}
-
-            {/* RESET */}
-            {mode === 'reset' && (
-              <>
-                <div style={{ fontFamily: 'Cormorant Garamond, serif', fontStyle: 'italic', fontSize: '28px', fontWeight: 700, color: '#162018', marginBottom: '28px', lineHeight: 1.1 }}>
-                  Recover<br />your access.
-                </div>
-                {!resetOtpSent ? (
-                  <>
-                    <div style={{ marginBottom: '20px' }}>
-                      <label style={lbl}>Student ID</label>
-                      <input type="text" inputMode="numeric" maxLength={8} placeholder="21301234" value={id}
-                        onChange={e => setId(e.target.value)} onFocus={() => setFocused('fid')} onBlur={() => setFocused(null)}
-                        style={inpStyle('fid')} autoComplete="username" />
-                      <div style={{ fontSize: '9px', color: '#8FAA92', marginTop: '4px' }}>OTP sent to your recovery email</div>
-                    </div>
-                    <button onClick={sendResetOtp} disabled={loading} style={subBtn}
-                      onMouseEnter={() => setBtnHover(true)} onMouseLeave={() => setBtnHover(false)}>
-                      {loading ? 'Sending OTP...' : 'Send Reset OTP →'}
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <div style={{ background: 'rgba(92,140,106,0.06)', border: '1px solid rgba(92,140,106,0.2)', padding: '12px 14px', marginBottom: '20px', fontSize: '10px', color: '#6B7F6E', borderRadius: '3px' }}>
-                      OTP sent to your recovery email.
-                    </div>
-                    <div style={{ marginBottom: '16px' }}>
-                      <label style={lbl}>6-Digit OTP</label>
-                      <input type="text" inputMode="numeric" maxLength={6} placeholder="123456" value={resetOtp}
-                        onChange={e => setResetOtp(e.target.value.replace(/\D/g, ''))} onFocus={() => setFocused('rotp')} onBlur={() => setFocused(null)}
-                        style={{ ...inpStyle('rotp'), fontSize: '24px', letterSpacing: '8px', textAlign: 'center' }} />
-                    </div>
-                    <div style={{ marginBottom: '20px' }}>
-                      <label style={lbl}>New Password</label>
-                      <input type="password" placeholder="Min 8 characters" value={newPw}
-                        onChange={e => setNewPw(e.target.value)} onFocus={() => setFocused('npw')} onBlur={() => setFocused(null)}
-                        style={inpStyle('npw')} autoComplete="new-password" />
-                    </div>
-                    <button onClick={verifyResetOtp} disabled={loading} style={subBtn}
-                      onMouseEnter={() => setBtnHover(true)} onMouseLeave={() => setBtnHover(false)}>
-                      {loading ? 'Resetting...' : 'Reset Password →'}
-                    </button>
-                    <button onClick={() => { setResetOtpSent(false); setResetOtp(''); setMsg('') }} style={secBtn}>← Back</button>
-                  </>
-                )}
-              </>
-            )}
-
-            <div style={{ marginTop: '24px', paddingTop: '18px', borderTop: '1px solid #D0E2D4', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3px 14px', fontSize: '9px', color: '#8FAA92', lineHeight: 2, fontFamily: 'DM Mono, monospace' }}>
-              <div><span style={{ color: '#5C8C6A' }}>✓</span> G Suite verified</div>
-              <div><span style={{ color: '#5C8C6A' }}>✓</span> AES-256</div>
-              <div><span style={{ color: '#5C8C6A' }}>✓</span> OTP protected</div>
-              <div><span style={{ color: '#5C8C6A' }}>✓</span> Recovery email</div>
-            </div>
+        {/* Strip */}
+        <div style={{ overflow: 'hidden', borderBottom: '1px solid var(--border)', padding: '10px 0', background: 'rgba(92,140,106,0.03)', marginTop: '52px' }}>
+          <div style={{ display: 'flex', gap: '40px', animation: 'scroll 20s linear infinite', width: 'max-content' }}>
+            {[...Array(2)].flatMap(() => ['Academic AI', 'Student ID Auth', 'Faculty Reviews', 'Live USIS Data', 'CGPA Calculator', 'AI Resume'].map((t, i) => (
+              <span key={t + i} style={{ fontSize: '8px', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--faded)', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                {t}<span style={{ color: 'rgba(92,140,106,0.4)' }}>//</span>
+              </span>
+            )))}
           </div>
         </div>
 
-        <div className="login-foot">
-          <div>BRACU/CMD — v2.0</div>
-          <div>Built by a CSE student · For every student that follows</div>
+        {/* Mobile Hero */}
+        <div style={{ padding: '20px 16px', borderBottom: '1px solid var(--border)' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '12px', alignItems: 'start' }}>
+            <div>
+              <div style={{ fontSize: '8px', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--red)', marginBottom: '6px' }}>// WELCOME BACK, STUDENT {studentId}</div>
+              <div style={{ fontFamily: 'Cormorant Garamond,serif', fontSize: '28px', letterSpacing: '1px', lineHeight: 1.1, color: 'var(--ink)', fontWeight: 700 }}>BRACU<br />COMMAND</div>
+            </div>
+            <div style={{ background: 'var(--ink2)', border: '1px solid var(--border)', padding: '10px 12px', textAlign: 'center', minWidth: '110px', borderRadius: '3px' }}>
+              <div style={{ fontSize: '8px', letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--faded)', marginBottom: '4px' }}>USIS SEAT DATA</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'center', marginBottom: '2px' }}>
+                <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: 'var(--red)', display: 'inline-block' }} />
+                <span style={{ fontSize: '9px', color: 'var(--red)', fontWeight: 700, letterSpacing: '1px' }}>LIVE CDN</span>
+              </div>
+              <div style={{ fontFamily: 'DM Mono,monospace', fontSize: '22px', letterSpacing: '2px', color: 'var(--ink)' }}>
+                00:{String(timer).padStart(2, '0')}
+              </div>
+              <div style={{ fontSize: '8px', color: 'var(--faded)', letterSpacing: '0.5px', marginTop: '2px' }}>Refreshes every 60s</div>
+            </div>
+          </div>
+
+          {/* Mobile Search */}
+          <div style={{ marginTop: '14px', background: '#FFFFFF', border: '1px solid var(--border)', borderRadius: '4px', padding: '10px 12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ color: 'var(--faded)', fontSize: '14px' }}>🔍</span>
+            <input
+              style={{ flex: 1, background: 'transparent', border: 'none', color: 'var(--ink)', fontFamily: 'DM Sans,monospace', fontSize: '12px', outline: 'none' }}
+              placeholder="Search modules..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
+          </div>
+        </div>
+
+        {/* Mobile grid — 2 columns */}
+        <div style={{ padding: '14px 12px' }}>
+          {/* Category label */}
+          <div style={{ fontSize: '8px', letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--faded)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            {category}
+            <span style={{ flex: 1, height: '1px', background: 'var(--border)', display: 'inline-block' }} />
+            <span style={{ color: 'var(--red)' }}>{filtered.length} modules</span>
+          </div>
+
+          {filtered.length === 0 && (
+            <div style={{ padding: '40px', textAlign: 'center', color: 'var(--faded)', fontSize: '11px' }}>
+              No modules found for &quot;{search}&quot;
+            </div>
+          )}
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+            {filtered.map(t => (
+              <button
+                key={t.id}
+                style={mobileTileStyle(t.id)}
+                onClick={() => router.push(`/${t.id}`)}
+                onMouseEnter={() => setHoveredTile(t.id)}
+                onMouseLeave={() => setHoveredTile(null)}
+              >
+                <div style={{ fontSize: '22px', marginBottom: '8px' }}>{t.icon}</div>
+                <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--ink)', marginBottom: '4px', lineHeight: 1.3 }}>{t.name}</div>
+                <div style={{ fontSize: '9px', color: 'var(--faded)', lineHeight: 1.6, flex: 1 }}>{t.desc.substring(0, 50)}{t.desc.length > 50 ? '...' : ''}</div>
+                <div style={{ fontSize: '8px', letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--red)', marginTop: '8px' }}>{t.tag}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* CTA */}
+        <div style={{ padding: '40px 16px', textAlign: 'center', borderTop: '1px solid var(--border)', marginTop: '8px' }}>
+          <div style={{ fontSize: '8px', letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--red)', marginBottom: '10px' }}>// For every batch that comes after us</div>
+          <div style={{ fontFamily: 'Cormorant Garamond,serif', fontStyle: 'italic', fontSize: '28px', fontWeight: 700, color: 'var(--ink)', lineHeight: 1.1, marginBottom: '10px' }}>Be the senior<br />you never had.</div>
+          <p style={{ fontSize: '11px', color: 'var(--faded)', lineHeight: 1.9, marginBottom: '20px' }}>Help grow BRACU Command — contribute resources, write reviews, share knowledge.</p>
+          <button onClick={() => router.push('/resources')}
+            style={{ fontFamily: 'DM Sans,sans-serif', fontSize: '10px', letterSpacing: '2px', textTransform: 'uppercase', color: '#F0F7F2', background: 'var(--red)', border: 'none', padding: '14px 28px', cursor: 'pointer', width: '100%', borderRadius: '3px' }}>
+            Contribute Resources →
+          </button>
+        </div>
+
+        {/* Fixed Bottom Tab Bar */}
+        <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 500, paddingBottom: 'env(safe-area-inset-bottom)', background: 'linear-gradient(to top, #F6FAF7 60%, transparent)', paddingTop: '16px' }}>
+          <div style={{ margin: '0 12px 12px', background: '#EDF5EF', border: '1px solid #D0E2D4', borderRadius: '50px', padding: '5px', display: 'flex', gap: '2px' }}>
+            {BOTTOM_TABS.map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => { setCategory(tab.id); setSearch('') }}
+                style={{ flex: 1, padding: category === tab.id ? '8px 6px' : '8px 4px', background: category === tab.id ? 'var(--red)' : 'transparent', borderRadius: '40px', border: 'none', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', transition: 'all .2s' }}>
+                <span style={{ fontSize: '16px' }}>{tab.icon}</span>
+                <span style={{ fontSize: '7px', letterSpacing: '0.5px', textTransform: 'uppercase', fontFamily: 'DM Sans,sans-serif', color: category === tab.id ? '#F0F7F2' : 'var(--faded)', fontWeight: category === tab.id ? 700 : 400, whiteSpace: 'nowrap' }}>
+                  {tab.label}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <style>{`
+          @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,700;1,400;1,700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap');
+          * { cursor: pointer; box-sizing: border-box; margin: 0; padding: 0; }
+          :root { --ink: #162018; --ink2: #EDF5EF; --paper: #F6FAF7; --red: #5C8C6A; --faded: #6B7F6E; --dim: #8FAA92; --bronze: #5C8C6A; --border: #D0E2D4; }
+          body { background: var(--paper); color: var(--ink); font-family: 'DM Sans', sans-serif; }
+          @keyframes scroll { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+          input::placeholder { color: #8FAA92; }
+        `}</style>
+      </div>
+    )
+  }
+
+  // Desktop layout
+  return (
+    <div style={s.page}>
+      {/* Nav */}
+      <nav style={s.nav}>
+        <div style={{ fontFamily: 'Cormorant Garamond,serif', fontSize: '20px', letterSpacing: '4px', fontWeight: 700, color: 'var(--ink)' }}>
+          BRACU<span style={{ color: 'var(--red)' }}>/</span>CMD
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '10px', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--faded)' }}>
+            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--red)', display: 'inline-block' }} />Online
+          </div>
+          <div style={{ fontSize: '10px', letterSpacing: '1px', color: 'var(--faded)', border: '1px solid var(--border)', padding: '5px 12px', borderRadius: '3px' }}>
+            ID: {studentId}
+          </div>
+          <button onClick={async () => { await fetch('/api/auth/session', { method: 'DELETE' }); router.push('/login') }}
+            style={{ fontSize: '10px', letterSpacing: '2px', textTransform: 'uppercase', background: 'none', border: 'none', color: 'var(--faded)', cursor: 'pointer', fontFamily: 'DM Sans,sans-serif' }}>
+            Sign Out
+          </button>
+        </div>
+      </nav>
+
+      {/* Strip */}
+      <div style={{ overflow: 'hidden', borderBottom: '1px solid var(--border)', padding: '12px 0', background: 'rgba(92,140,106,0.03)', marginTop: '52px' }}>
+        <div style={{ display: 'flex', gap: '52px', animation: 'scroll 26s linear infinite', width: 'max-content' }}>
+          {[...Array(2)].flatMap(() => ['Academic AI', 'Student ID Auth', 'Faculty Reviews', 'Live USIS Data', 'CGPA Calculator', 'AI Resume', 'Mock Exams', 'Study Groups', 'Course Ratings', 'Campus Map'].map((t, i) => (
+            <span key={t + i} style={{ fontSize: '9px', letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--faded)', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '12px' }}>
+              {t}<span style={{ color: 'rgba(92,140,106,0.4)' }}>//</span>
+            </span>
+          )))}
         </div>
       </div>
-    </>
+
+      {/* Hero */}
+      <div style={s.wrap}>
+        <div style={s.hero}>
+          <div>
+            <div style={{ fontSize: '9px', letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--red)', marginBottom: '10px' }}>
+              // Welcome back, Student {studentId}
+            </div>
+            <div style={s.h1}>BRACU COMMAND<br />DASHBOARD</div>
+            <div style={s.sub}>Academic intelligence · Resource archive · AI tools · Community</div>
+          </div>
+          <div style={s.seatBox}>
+            <div style={{ fontSize: '9px', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--faded)', marginBottom: '6px' }}>USIS Seat Data</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'flex-end', marginBottom: '3px' }}>
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--red)', display: 'inline-block' }} />
+              <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--red)', letterSpacing: '1px' }}>LIVE CDN</span>
+            </div>
+            <div style={{ fontFamily: 'DM Mono,monospace', fontSize: '26px', letterSpacing: '2px', color: 'var(--ink)' }}>
+              00:{String(timer).padStart(2, '0')}
+            </div>
+            <div style={{ fontSize: '9px', color: 'var(--faded)', letterSpacing: '1px' }}>Refreshes every 60 seconds</div>
+          </div>
+        </div>
+
+        {/* Search + Filter */}
+        <div style={s.searchBar}>
+          <input style={s.searchInp} placeholder="Search modules..." value={search} onChange={e => setSearch(e.target.value)} />
+        </div>
+
+        {/* macOS pill nav — desktop only */}
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '28px' }}>
+          <div style={{ background: '#EDF5EF', border: '1px solid #D0E2D4', borderRadius: '40px', padding: '4px', display: 'flex', gap: '2px' }}>
+            {CATEGORIES.filter(c => c !== 'All').map(c => (
+              <button key={c} onClick={() => setCategory(c)}
+                style={{ borderRadius: '30px', padding: '8px 22px', fontFamily: 'DM Sans,sans-serif', fontSize: '10px', letterSpacing: '1px', border: 'none', cursor: 'pointer', transition: 'all .2s', background: category === c ? 'var(--red)' : 'transparent', color: category === c ? '#F0F7F2' : 'var(--faded)', fontWeight: category === c ? 700 : 400 }}>
+                {c}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Tiles Grid */}
+        {CATEGORIES.filter(c => c !== 'All').map(cat => {
+          const catTiles = filtered.filter(t => t.category === cat)
+          if (catTiles.length === 0) return null
+          return (
+            <div key={cat} style={{ marginBottom: '32px' }}>
+              <div style={{ fontSize: '9px', letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--faded)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                {cat}
+                <span style={{ flex: 1, height: '1px', background: 'var(--border)', display: 'inline-block' }} />
+              </div>
+              <div style={s.grid}>
+                {catTiles.map(t => (
+                  <button key={t.id} style={tileStyle(t.id)} onClick={() => router.push(`/${t.id}`)} onMouseEnter={() => setHoveredTile(t.id)} onMouseLeave={() => setHoveredTile(null)}>
+                    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '2px', background: 'var(--red)', transform: hoveredTile === t.id ? 'scaleX(1)' : 'scaleX(0)', transformOrigin: 'left', transition: 'transform .3s' }} />
+                    <div style={{ fontFamily: 'DM Mono,monospace', fontSize: '32px', color: 'rgba(92,140,106,0.07)', letterSpacing: '2px', lineHeight: 1, marginBottom: '10px' }}>{t.num}</div>
+                    <div style={{ fontSize: '18px', marginBottom: '8px' }}>{t.icon}</div>
+                    <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--ink)', letterSpacing: '.3px', marginBottom: '6px' }}>{t.name}</div>
+                    <div style={{ fontSize: '11px', color: 'var(--faded)', lineHeight: 1.8, flex: 1 }}>{t.desc}</div>
+                    <div style={{ fontSize: '9px', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--red)', marginTop: '12px' }}>{t.tag}</div>
+                    <div style={{ fontSize: '14px', color: 'var(--red)', marginTop: '10px', opacity: hoveredTile === t.id ? 1 : 0, transition: 'all .2s' }}>→</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )
+        })}
+
+        {filtered.length === 0 && (
+          <div style={{ padding: '60px', textAlign: 'center', color: 'var(--faded)', fontSize: '12px', letterSpacing: '1px' }}>
+            No modules found for &quot;{search}&quot;
+          </div>
+        )}
+
+        {/* CTA */}
+        <div style={{ padding: '72px 0', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
+          <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', fontFamily: 'Cormorant Garamond,serif', fontSize: 'clamp(80px,14vw,180px)', color: 'rgba(92,140,106,0.06)', letterSpacing: '8px', whiteSpace: 'nowrap', pointerEvents: 'none', userSelect: 'none' }}>COMMAND</div>
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            <div style={{ fontSize: '9px', letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--red)', marginBottom: '12px' }}>// For every batch that comes after us</div>
+            <div style={{ fontFamily: 'Cormorant Garamond,serif', fontStyle: 'italic', fontSize: 'clamp(32px,4.5vw,56px)', fontWeight: 700, color: 'var(--ink)', lineHeight: 1.05, marginBottom: '12px' }}>Be the senior<br />you never had.</div>
+            <p style={{ fontSize: '11px', color: 'var(--faded)', lineHeight: 2, maxWidth: '360px', margin: '0 auto 28px' }}>Help grow BRACU Command — contribute resources, write reviews, share knowledge.</p>
+            <button onClick={() => router.push('/resources')} style={{ fontFamily: 'DM Sans,sans-serif', fontSize: '10px', letterSpacing: '2.5px', textTransform: 'uppercase', color: '#F0F7F2', background: 'var(--red)', border: 'none', padding: '14px 32px', cursor: 'pointer', borderRadius: '3px' }}>
+              Contribute Resources →
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <footer style={{ borderTop: '1px solid var(--border)', padding: '22px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', maxWidth: '1200px', margin: '0 auto' }}>
+        <div>
+          <div style={{ fontFamily: 'Cormorant Garamond,serif', fontSize: '17px', letterSpacing: '3px', fontWeight: 700, color: 'var(--ink)' }}>BRACU<span style={{ color: 'var(--red)' }}>/</span>CMD</div>
+          <div style={{ fontSize: '9px', letterSpacing: '1.5px', color: 'var(--dim)', marginTop: '4px', textTransform: 'uppercase' }}>Academic Intelligence System — v2.0</div>
+        </div>
+        <div style={{ fontSize: '9px', color: 'var(--faded)', letterSpacing: '1px', textAlign: 'right', lineHeight: 1.8 }}>
+          Built by a CSE student.<br />For every student that follows.
+        </div>
+      </footer>
+
+      <button style={{ ...s.backTop, opacity: showTop ? 1 : 0, pointerEvents: showTop ? 'all' : 'none' }} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>↑</button>
+
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,700;1,400;1,700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap');
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        :root { --ink: #162018; --ink2: #EDF5EF; --paper: #F6FAF7; --red: #5C8C6A; --faded: #6B7F6E; --dim: #8FAA92; --bronze: #5C8C6A; --border: #D0E2D4; }
+        body { background: var(--paper); color: var(--ink); font-family: 'DM Sans', sans-serif; }
+        @keyframes scroll { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+        input::placeholder { color: #8FAA92; }
+      `}</style>
+    </div>
   )
 }
