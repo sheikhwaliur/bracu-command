@@ -95,34 +95,36 @@ export default function LoginPage() {
   }, [resetOtp, newPw, id])
 
   const inpStyle = (name: string): React.CSSProperties => ({
-    width: '100%', background: '#fffbf8', border: `1px solid ${focused === name ? '#23386b' : '#d8d0c4'}`,
-    color: '#111111', fontFamily: 'DM Sans, sans-serif', fontSize: '14px', padding: '10px 12px',
-    outline: 'none', borderRadius: '3px', letterSpacing: '0.3px', transition: 'border-color .2s',
+    width: '100%', background: '#F6FAF7', border: '1px solid',
+    borderColor: focused === name ? '#5C8C6A' : '#D0E2D4',
+    color: '#162018', fontFamily: 'DM Sans, sans-serif',
+    fontSize: '14px', padding: '10px 12px', outline: 'none', borderRadius: '3px',
+    letterSpacing: '0.3px', transition: 'border-color .2s',
   })
 
   const lbl: React.CSSProperties = {
     fontSize: '10px', letterSpacing: '0.12em', textTransform: 'uppercase',
-    color: '#23386b', display: 'block', marginBottom: '8px', fontWeight: 600, fontFamily: 'DM Sans, sans-serif',
+    color: '#5C8C6A', display: 'block', marginBottom: '8px', fontWeight: 600, fontFamily: 'DM Sans, sans-serif',
   }
 
   const subBtn: React.CSSProperties = {
-    width: '100%', background: btnHover ? '#1a2a52' : '#23386b', color: '#fffbf8',
+    width: '100%', background: btnHover ? '#4A7A58' : '#5C8C6A', color: '#F0F7F2',
     border: 'none', padding: '13px', borderRadius: '3px', fontFamily: 'DM Sans, sans-serif',
     fontSize: '12px', letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 600,
     marginTop: '8px', transition: 'all .2s', cursor: 'pointer', opacity: loading ? 0.6 : 1,
   }
 
   const secBtn: React.CSSProperties = {
-    width: '100%', background: 'transparent', color: '#666666', border: '1px solid #d8d0c4',
+    width: '100%', background: 'transparent', color: '#6B7F6E', border: '1px solid #D0E2D4',
     padding: '12px', fontFamily: 'DM Sans, sans-serif', cursor: 'pointer', borderRadius: '3px',
     textTransform: 'uppercase', fontSize: '11px', fontWeight: 400, marginTop: '8px', transition: 'all .2s',
   }
 
   const tabBtn = (m: string): React.CSSProperties => ({
     flex: 1, padding: '10px',
-    background: mode === m ? '#23386b' : 'transparent',
-    color: mode === m ? '#fffbf8' : '#666666',
-    border: `1px solid ${mode === m ? '#23386b' : '#d8d0c4'}`,
+    background: mode === m ? '#5C8C6A' : 'transparent',
+    color: mode === m ? '#F0F7F2' : '#6B7F6E',
+    border: `1px solid ${mode === m ? '#5C8C6A' : '#D0E2D4'}`,
     fontSize: '10px', letterSpacing: '0.08em', textTransform: 'uppercase',
     fontFamily: 'DM Sans, sans-serif', transition: 'all .2s', cursor: 'pointer', borderRadius: '3px',
   })
@@ -132,18 +134,18 @@ export default function LoginPage() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,700;1,400;1,700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; cursor: crosshair; }
-        :root { --ink: #111111; --ink2: #eee8df; --paper: #fffbf8; --red: #23386b; --faded: #666666; --dim: #999999; --border: #d8d0c4; }
+        :root { --ink: #162018; --ink2: #EDF5EF; --paper: #F6FAF7; --red: #5C8C6A; --faded: #6B7F6E; --dim: #8FAA92; --bronze: #5C8C6A; --border: #D0E2D4; }
         html, body { height: 100%; background: var(--paper); color: var(--ink); font-family: 'DM Sans', sans-serif; }
-        input::placeholder { color: #aaa; font-size: 13px; }
+        input::placeholder { color: #8FAA92; font-size: 13px; }
         input:focus { outline: none; }
         @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.2} }
         @keyframes rise { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
         .login-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; background: var(--paper); position: relative; overflow: hidden; }
-        .bg-word { position: fixed; font-family: 'Cormorant Garamond', serif; color: rgba(35,56,107,0.04); letter-spacing: 12px; pointer-events: none; user-select: none; z-index: 0; line-height: 1; }
-        .login-nav { position: fixed; top: 0; left: 0; right: 0; height: 52px; display: flex; align-items: center; justify-content: space-between; padding: 0 40px; z-index: 100; background: rgba(255,251,248,0.95); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
-        .login-card { position: relative; z-index: 10; width: 100%; max-width: 880px; display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--border); margin-top: 52px; animation: rise .7s ease both; box-shadow: 0 4px 24px rgba(35,56,107,0.06); }
-        .card-left { padding: 48px 40px; border-right: 1px solid var(--border); background: #23386b; position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; }
-        .card-left::before { content: ''; position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(0deg, transparent, transparent 27px, rgba(255,251,248,0.03) 27px, rgba(255,251,248,0.03) 28px); }
+        .bg-word { position: fixed; font-family: 'Cormorant Garamond', serif; color: rgba(92,140,106,0.05); letter-spacing: 12px; pointer-events: none; user-select: none; z-index: 0; line-height: 1; }
+        .login-nav { position: fixed; top: 0; left: 0; right: 0; height: 52px; display: flex; align-items: center; justify-content: space-between; padding: 0 40px; z-index: 100; background: rgba(246,250,247,0.95); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
+        .login-card { position: relative; z-index: 10; width: 100%; max-width: 880px; display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--border); margin-top: 52px; animation: rise .7s ease both; box-shadow: 0 4px 24px rgba(22,32,24,0.06); }
+        .card-left { padding: 48px 40px; border-right: 1px solid var(--border); background: #162018; position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; }
+        .card-left::before { content: ''; position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(0deg, transparent, transparent 27px, rgba(92,140,106,0.04) 27px, rgba(92,140,106,0.04) 28px); }
         .card-left-inner { position: relative; z-index: 1; }
         .card-right { padding: 48px 40px; background: var(--paper); overflow-y: auto; max-height: 90vh; }
         .login-foot { position: fixed; bottom: 0; left: 0; right: 0; padding: 0 40px; height: 38px; display: flex; align-items: center; justify-content: space-between; font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--dim); border-top: 1px solid var(--border); background: var(--paper); font-family: 'DM Mono', monospace; }
@@ -162,41 +164,41 @@ export default function LoginPage() {
         <div className="bg-word" style={{ top: '-20px', right: '-40px', fontSize: 'clamp(70px,10vw,140px)', letterSpacing: '6px', opacity: .5 }}>BRACU</div>
 
         <nav className="login-nav">
-          <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '20px', letterSpacing: '4px', color: '#111111', fontWeight: 700 }}>
-            BRACU<span style={{ color: '#23386b' }}>/</span>CMD
+          <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '20px', letterSpacing: '4px', color: '#162018', fontWeight: 700 }}>
+            BRACU<span style={{ color: '#5C8C6A' }}>/</span>CMD
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '10px', letterSpacing: '2px', textTransform: 'uppercase', color: '#666666', fontFamily: 'DM Mono, monospace' }}>
-            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#23386b', display: 'inline-block', animation: 'pulse 2.5s step-end infinite' }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '10px', letterSpacing: '2px', textTransform: 'uppercase', color: '#6B7F6E', fontFamily: 'DM Mono, monospace' }}>
+            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#5C8C6A', display: 'inline-block', animation: 'pulse 2.5s step-end infinite' }} />
             System Online
           </div>
         </nav>
 
         <div className="login-card">
-          <div style={{ position: 'absolute', top: '-1px', left: '60px', right: '60px', height: '2px', background: 'linear-gradient(90deg,transparent,#23386b,transparent)', zIndex: 1 }} />
+          <div style={{ position: 'absolute', top: '-1px', left: '60px', right: '60px', height: '2px', background: 'linear-gradient(90deg,transparent,#5C8C6A,transparent)', zIndex: 1 }} />
 
-          {/* LEFT — navy bg */}
+          {/* LEFT — dark green bg */}
           <div className="card-left">
             <div className="card-left-inner">
-              <div style={{ display: 'inline-block', fontSize: '8px', letterSpacing: '3px', textTransform: 'uppercase', color: 'rgba(255,251,248,0.6)', border: '1px solid rgba(255,251,248,0.2)', padding: '3px 9px', marginBottom: '24px', fontWeight: 600, fontFamily: 'DM Mono, monospace' }}>
+              <div style={{ display: 'inline-block', fontSize: '8px', letterSpacing: '3px', textTransform: 'uppercase', color: 'rgba(240,247,242,0.5)', border: '1px solid rgba(92,140,106,0.3)', padding: '3px 9px', marginBottom: '24px', fontWeight: 600, fontFamily: 'DM Mono, monospace' }}>
                 Classified — Students Only
               </div>
-              <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(40px,5vw,64px)', lineHeight: 0.9, letterSpacing: '2px', color: '#fffbf8', fontWeight: 700 }}>ACADEMIC</div>
-              <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(18px,2.2vw,28px)', letterSpacing: '3px', color: 'rgba(255,251,248,0.5)', marginBottom: '22px' }}>COMMAND</div>
-              <p style={{ fontSize: '11px', color: 'rgba(255,251,248,0.6)', lineHeight: 1.9, borderLeft: '2px solid rgba(255,251,248,0.2)', paddingLeft: '14px', marginBottom: '28px', maxWidth: '260px', fontFamily: 'DM Sans, sans-serif' }}>
+              <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(40px,5vw,64px)', lineHeight: 0.9, letterSpacing: '2px', color: '#F0F7F2', fontWeight: 700 }}>ACADEMIC</div>
+              <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(18px,2.2vw,28px)', letterSpacing: '3px', color: '#5C8C6A', marginBottom: '22px' }}>COMMAND</div>
+              <p style={{ fontSize: '11px', color: '#6B7F6E', lineHeight: 1.9, borderLeft: '2px solid rgba(92,140,106,0.3)', paddingLeft: '14px', marginBottom: '28px', maxWidth: '260px', fontFamily: 'DM Sans, sans-serif' }}>
                 Study resources, professor intelligence, AI-powered advising, live USIS seat data — built for every BRACU student, forever.
               </p>
               {['Resource archive & past papers', 'Faculty intelligence board', 'AI engine — ask anything', 'Live USIS seat data', 'CGPA & credit tracker', 'AI resume & interview prep', 'Study groups & mentorship'].map((f, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '7px 0', borderBottom: '1px solid rgba(255,251,248,0.08)', fontSize: '10px', color: 'rgba(255,251,248,0.55)', letterSpacing: '.3px', fontFamily: 'DM Sans, sans-serif' }}>
-                  <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: 'rgba(255,251,248,0.4)', flexShrink: 0 }} />{f}
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '7px 0', borderBottom: '1px solid rgba(92,140,106,0.1)', fontSize: '10px', color: '#6B7F6E', letterSpacing: '.3px', fontFamily: 'DM Sans, sans-serif' }}>
+                  <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#5C8C6A', flexShrink: 0 }} />{f}
                 </div>
               ))}
             </div>
-            <div style={{ position: 'relative', zIndex: 1, marginTop: '24px', fontSize: '9px', letterSpacing: '2px', textTransform: 'uppercase', color: 'rgba(255,251,248,0.35)', lineHeight: 2, fontFamily: 'DM Mono, monospace' }}>
+            <div style={{ position: 'relative', zIndex: 1, marginTop: '24px', fontSize: '9px', letterSpacing: '2px', textTransform: 'uppercase', color: 'rgba(92,140,106,0.35)', lineHeight: 2, fontFamily: 'DM Mono, monospace' }}>
               BRAC University // Dhaka, Bangladesh
             </div>
           </div>
 
-          {/* RIGHT — warm white bg */}
+          {/* RIGHT */}
           <div className="card-right">
             <div style={{ display: 'flex', gap: '4px', marginBottom: '28px' }}>
               {(['login', 'signup', 'reset'] as const).map(m => (
@@ -206,13 +208,13 @@ export default function LoginPage() {
               ))}
             </div>
 
-            {msg && <div style={{ background: 'rgba(35,56,107,0.06)', border: '1px solid rgba(35,56,107,0.2)', color: '#23386b', padding: '10px 14px', fontSize: '11px', marginBottom: '20px', borderRadius: '3px' }}>✓ {msg}</div>}
+            {msg && <div style={{ background: 'rgba(92,140,106,0.08)', border: '1px solid rgba(92,140,106,0.25)', color: '#5C8C6A', padding: '10px 14px', fontSize: '11px', marginBottom: '20px', borderRadius: '3px' }}>✓ {msg}</div>}
             {err && <div style={{ background: 'rgba(180,30,30,0.05)', border: '1px solid rgba(180,30,30,0.2)', color: '#b41e1e', padding: '10px 14px', fontSize: '11px', marginBottom: '20px', borderRadius: '3px' }}>✗ {err}</div>}
 
             {/* LOGIN */}
             {mode === 'login' && (
               <>
-                <div style={{ fontFamily: 'Cormorant Garamond, serif', fontStyle: 'italic', fontSize: '28px', fontWeight: 700, color: '#111111', marginBottom: '28px', lineHeight: 1.1 }}>
+                <div style={{ fontFamily: 'Cormorant Garamond, serif', fontStyle: 'italic', fontSize: '28px', fontWeight: 700, color: '#162018', marginBottom: '28px', lineHeight: 1.1 }}>
                   Sign in to<br />the system.
                 </div>
                 <div style={{ marginBottom: '20px' }}>
@@ -220,7 +222,7 @@ export default function LoginPage() {
                   <input type="text" inputMode="numeric" maxLength={8} placeholder="21301234" value={id}
                     onChange={e => setId(e.target.value)} onFocus={() => setFocused('id')} onBlur={() => setFocused(null)}
                     onKeyDown={e => e.key === 'Enter' && handleLogin()} style={inpStyle('id')} autoComplete="username" />
-                  <div style={{ fontSize: '9px', color: '#999', marginTop: '5px' }}>Your 8-digit BRACU student ID</div>
+                  <div style={{ fontSize: '9px', color: '#8FAA92', marginTop: '5px' }}>Your 8-digit BRACU student ID</div>
                 </div>
                 <div style={{ marginBottom: '20px' }}>
                   <label style={lbl}>Password</label>
@@ -238,7 +240,7 @@ export default function LoginPage() {
             {/* SIGNUP */}
             {mode === 'signup' && (
               <>
-                <div style={{ fontFamily: 'Cormorant Garamond, serif', fontStyle: 'italic', fontSize: '28px', fontWeight: 700, color: '#111111', marginBottom: '28px', lineHeight: 1.1 }}>
+                <div style={{ fontFamily: 'Cormorant Garamond, serif', fontStyle: 'italic', fontSize: '28px', fontWeight: 700, color: '#162018', marginBottom: '28px', lineHeight: 1.1 }}>
                   Join BRACU<br />Command.
                 </div>
                 <div style={{ marginBottom: '16px' }}>
@@ -246,21 +248,21 @@ export default function LoginPage() {
                   <input type="text" inputMode="numeric" maxLength={8} placeholder="21301234" value={id}
                     onChange={e => setId(e.target.value)} onFocus={() => setFocused('sid')} onBlur={() => setFocused(null)}
                     style={inpStyle('sid')} autoComplete="username" />
-                  <div style={{ fontSize: '9px', color: '#999', marginTop: '4px' }}>Your 8-digit BRACU student ID</div>
+                  <div style={{ fontSize: '9px', color: '#8FAA92', marginTop: '4px' }}>Your 8-digit BRACU student ID</div>
                 </div>
                 <div style={{ marginBottom: '16px' }}>
                   <label style={lbl}>BRACU G Suite Email</label>
                   <input type="email" placeholder="username@g.bracu.ac.bd" value={gsuiteEmail}
                     onChange={e => setGsuiteEmail(e.target.value)} onFocus={() => setFocused('gsuite')} onBlur={() => setFocused(null)}
                     style={inpStyle('gsuite')} autoComplete="email" />
-                  <div style={{ fontSize: '9px', color: '#999', marginTop: '4px' }}>Confirmation link will be sent here</div>
+                  <div style={{ fontSize: '9px', color: '#8FAA92', marginTop: '4px' }}>Confirmation link will be sent here</div>
                 </div>
                 <div style={{ marginBottom: '16px' }}>
-                  <label style={lbl}>Recovery Email <span style={{ color: '#999', fontWeight: 400 }}>(optional)</span></label>
+                  <label style={lbl}>Recovery Email <span style={{ color: '#8FAA92', fontWeight: 400 }}>(optional)</span></label>
                   <input type="email" placeholder="your.personal@gmail.com" value={recoveryEmail}
                     onChange={e => setRecoveryEmail(e.target.value)} onFocus={() => setFocused('recovery')} onBlur={() => setFocused(null)}
                     style={inpStyle('recovery')} autoComplete="email" />
-                  <div style={{ fontSize: '9px', color: '#999', marginTop: '4px' }}>Used to reset password if you lose G Suite access</div>
+                  <div style={{ fontSize: '9px', color: '#8FAA92', marginTop: '4px' }}>Used to reset password if you lose G Suite access</div>
                 </div>
                 <div style={{ marginBottom: '16px' }}>
                   <label style={lbl}>Password</label>
@@ -284,7 +286,7 @@ export default function LoginPage() {
             {/* RESET */}
             {mode === 'reset' && (
               <>
-                <div style={{ fontFamily: 'Cormorant Garamond, serif', fontStyle: 'italic', fontSize: '28px', fontWeight: 700, color: '#111111', marginBottom: '28px', lineHeight: 1.1 }}>
+                <div style={{ fontFamily: 'Cormorant Garamond, serif', fontStyle: 'italic', fontSize: '28px', fontWeight: 700, color: '#162018', marginBottom: '28px', lineHeight: 1.1 }}>
                   Recover<br />your access.
                 </div>
                 {!resetOtpSent ? (
@@ -294,7 +296,7 @@ export default function LoginPage() {
                       <input type="text" inputMode="numeric" maxLength={8} placeholder="21301234" value={id}
                         onChange={e => setId(e.target.value)} onFocus={() => setFocused('fid')} onBlur={() => setFocused(null)}
                         style={inpStyle('fid')} autoComplete="username" />
-                      <div style={{ fontSize: '9px', color: '#999', marginTop: '4px' }}>OTP sent to your recovery email</div>
+                      <div style={{ fontSize: '9px', color: '#8FAA92', marginTop: '4px' }}>OTP sent to your recovery email</div>
                     </div>
                     <button onClick={sendResetOtp} disabled={loading} style={subBtn}
                       onMouseEnter={() => setBtnHover(true)} onMouseLeave={() => setBtnHover(false)}>
@@ -303,7 +305,7 @@ export default function LoginPage() {
                   </>
                 ) : (
                   <>
-                    <div style={{ background: 'rgba(35,56,107,0.06)', border: '1px solid rgba(35,56,107,0.15)', padding: '12px 14px', marginBottom: '20px', fontSize: '10px', color: '#666', borderRadius: '3px' }}>
+                    <div style={{ background: 'rgba(92,140,106,0.06)', border: '1px solid rgba(92,140,106,0.2)', padding: '12px 14px', marginBottom: '20px', fontSize: '10px', color: '#6B7F6E', borderRadius: '3px' }}>
                       OTP sent to your recovery email.
                     </div>
                     <div style={{ marginBottom: '16px' }}>
@@ -328,11 +330,11 @@ export default function LoginPage() {
               </>
             )}
 
-            <div style={{ marginTop: '24px', paddingTop: '18px', borderTop: '1px solid #eee8df', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3px 14px', fontSize: '9px', color: '#999', lineHeight: 2, fontFamily: 'DM Mono, monospace' }}>
-              <div><span style={{ color: '#23386b' }}>✓</span> G Suite verified</div>
-              <div><span style={{ color: '#23386b' }}>✓</span> AES-256</div>
-              <div><span style={{ color: '#23386b' }}>✓</span> OTP protected</div>
-              <div><span style={{ color: '#23386b' }}>✓</span> Recovery email</div>
+            <div style={{ marginTop: '24px', paddingTop: '18px', borderTop: '1px solid #D0E2D4', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3px 14px', fontSize: '9px', color: '#8FAA92', lineHeight: 2, fontFamily: 'DM Mono, monospace' }}>
+              <div><span style={{ color: '#5C8C6A' }}>✓</span> G Suite verified</div>
+              <div><span style={{ color: '#5C8C6A' }}>✓</span> AES-256</div>
+              <div><span style={{ color: '#5C8C6A' }}>✓</span> OTP protected</div>
+              <div><span style={{ color: '#5C8C6A' }}>✓</span> Recovery email</div>
             </div>
           </div>
         </div>
