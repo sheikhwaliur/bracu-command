@@ -268,7 +268,7 @@ export default function LoginPage() {
 
         <nav className="login-nav">
           <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '20px', letterSpacing: '4px', color: 'var(--paper)' }}>
-            BRACU<span style={{ color: 'var(--red)' }}>/</span>CMD
+            BRACU<span style={{ color: '#5C8C6A' }}>/</span>CMD
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '10px', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--faded)' }}>
             <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--red)', display: 'inline-block', animation: 'pulse 2.5s step-end infinite' }} />
