@@ -88,71 +88,71 @@ export default function Dashboard() {
 
   const catBtn = (active: boolean): React.CSSProperties => ({
     background: active ? 'var(--red)' : 'transparent',
-    color: active ? 'var(--paper)' : 'var(--faded)',
+    color: active ? '#F0F7F2' : 'var(--faded)',
     border: `1px solid ${active ? 'var(--red)' : 'var(--border)'}`,
     padding: '8px 14px', fontSize: '9px', letterSpacing: '1.5px',
-    textTransform: 'uppercase', fontFamily: 'IBM Plex Mono,monospace',
-    cursor: 'crosshair', transition: 'all .15s', whiteSpace: 'nowrap',
+    textTransform: 'uppercase', fontFamily: 'DM Sans,sans-serif',
+    cursor: 'pointer', transition: 'all .15s', whiteSpace: 'nowrap',
   })
 
   const tileStyle = (id: string): React.CSSProperties => ({
-    background: hoveredTile === id ? 'var(--ink2)' : 'var(--ink)',
-    padding: '28px', cursor: 'crosshair', position: 'relative',
+    background: hoveredTile === id ? '#EDF5EF' : '#FFFFFF',
+    padding: '28px', cursor: 'pointer', position: 'relative',
     overflow: 'hidden', transition: 'background .2s', display: 'flex',
-    flexDirection: 'column', border: 'none', textAlign: 'left',
-    color: 'var(--paper)', fontFamily: 'IBM Plex Mono,monospace', width: '100%',
+    flexDirection: 'column', border: '1px solid #D0E2D4', textAlign: 'left',
+    color: 'var(--ink)', fontFamily: 'DM Sans,sans-serif', width: '100%',
   })
 
   const mobileTileStyle = (id: string): React.CSSProperties => ({
-    background: hoveredTile === id ? 'var(--ink2)' : 'var(--ink)',
-    padding: '16px', cursor: 'crosshair', position: 'relative',
+    background: hoveredTile === id ? '#EDF5EF' : '#FFFFFF',
+    padding: '16px', cursor: 'pointer', position: 'relative',
     overflow: 'hidden', transition: 'background .2s', display: 'flex',
-    flexDirection: 'column', border: '1px solid var(--border)',
+    flexDirection: 'column', border: '1px solid #D0E2D4',
     borderRadius: '8px', textAlign: 'left',
-    color: 'var(--paper)', fontFamily: 'IBM Plex Mono,monospace', width: '100%',
+    color: 'var(--ink)', fontFamily: 'DM Sans,sans-serif', width: '100%',
   })
 
   const s: { [key: string]: React.CSSProperties } = {
-    page: { minHeight: '100vh', background: 'var(--ink)', color: 'var(--paper)', fontFamily: 'IBM Plex Mono,monospace' },
-    nav: { position: 'fixed', top: 0, left: 0, right: 0, height: '52px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 40px', background: 'rgba(12,11,9,0.95)', backdropFilter: 'blur(16px)', borderBottom: '1px solid var(--border)', zIndex: 500 },
+    page: { minHeight: '100vh', background: 'var(--paper)', color: 'var(--ink)', fontFamily: 'DM Sans,sans-serif' },
+    nav: { position: 'fixed', top: 0, left: 0, right: 0, height: '52px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 40px', background: 'rgba(246,250,247,0.95)', backdropFilter: 'blur(16px)', borderBottom: '1px solid var(--border)', zIndex: 500 },
     wrap: { maxWidth: '1200px', margin: '0 auto', padding: '0 40px' },
     hero: { padding: '80px 0 40px', borderBottom: '1px solid var(--border)', display: 'grid', gridTemplateColumns: '1fr auto', gap: '32px', alignItems: 'end' },
-    h1: { fontFamily: 'Bebas Neue,sans-serif', fontSize: 'clamp(36px,4.5vw,56px)', letterSpacing: '2px', lineHeight: '1' },
+    h1: { fontFamily: 'Cormorant Garamond,serif', fontSize: 'clamp(36px,4.5vw,56px)', letterSpacing: '1px', lineHeight: '1', color: 'var(--ink)', fontWeight: 700 },
     sub: { fontSize: '11px', color: 'var(--faded)', marginTop: '8px', letterSpacing: '.5px', lineHeight: '1.8' },
     seatBox: { background: 'var(--ink2)', border: '1px solid var(--border)', padding: '14px 20px', textAlign: 'right', minWidth: '180px' },
     searchBar: { display: 'flex', gap: '8px', margin: '28px 0 20px', alignItems: 'center' },
-    searchInp: { flex: 1, background: 'var(--ink2)', border: '1px solid var(--border)', color: 'var(--paper)', fontFamily: 'IBM Plex Mono,monospace', fontSize: '12px', padding: '10px 16px', outline: 'none', letterSpacing: '.5px' },
-    grid: { display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '2px', background: 'transparent' } as React.CSSProperties,
-    backTop: { position: 'fixed', bottom: '32px', right: '32px', background: 'var(--red)', color: 'var(--paper)', border: 'none', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', cursor: 'crosshair', zIndex: 400, transition: 'all .2s' },
+    searchInp: { flex: 1, background: '#FFFFFF', border: '1px solid var(--border)', color: 'var(--ink)', fontFamily: 'DM Sans,sans-serif', fontSize: '12px', padding: '10px 16px', outline: 'none', letterSpacing: '.5px', borderRadius: '3px' },
+    grid: { display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '8px', background: 'transparent' } as React.CSSProperties,
+    backTop: { position: 'fixed', bottom: '32px', right: '32px', background: 'var(--red)', color: '#F0F7F2', border: 'none', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', cursor: 'pointer', zIndex: 400, transition: 'all .2s', borderRadius: '3px' },
   }
 
   if (!authDone) return (
-    <div style={{ minHeight: '100vh', background: '#0A0E1A', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
+    <div style={{ minHeight: '100vh', background: '#F6FAF7', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,700;1,400;1,700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap');
         @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        :root { --ink: #0A0E1A; --red: #00B4FF; --paper: #E8F4FF; --faded: #4A7A9B; }
+        :root { --ink: #162018; --red: #5C8C6A; --paper: #F6FAF7; --faded: #6B7F6E; }
       `}</style>
-  
+
       {/* Top line */}
-      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '1px', background: 'linear-gradient(90deg,transparent,#00B4FF,transparent)' }} />
-      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '1px', background: 'linear-gradient(90deg,transparent,rgba(0,180,255,0.2),transparent)' }} />
-  
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '1px', background: 'linear-gradient(90deg,transparent,#5C8C6A,transparent)' }} />
+      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '1px', background: 'linear-gradient(90deg,transparent,rgba(92,140,106,0.2),transparent)' }} />
+
       {/* Ghost text */}
       <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', pointerEvents: 'none' }}>
-        <div style={{ fontFamily: 'Bebas Neue,monospace', fontSize: 'clamp(120px,22vw,200px)', fontWeight: 700, color: 'rgba(0,180,255,0.025)', userSelect: 'none', letterSpacing: '-8px' }}>CMD</div>
+        <div style={{ fontFamily: 'Cormorant Garamond,serif', fontSize: 'clamp(120px,22vw,200px)', fontWeight: 700, color: 'rgba(92,140,106,0.08)', userSelect: 'none', letterSpacing: '-8px' }}>CMD</div>
       </div>
-  
+
       {/* Content */}
       <div style={{ position: 'relative', textAlign: 'center', animation: 'fadeIn 0.3s ease-out' }}>
-        <div style={{ fontFamily: 'Bebas Neue,monospace', fontSize: '22px', fontWeight: 700, color: '#E8F4FF', letterSpacing: '8px', marginBottom: '6px' }}>
-          BRACU<span style={{ color: '#00B4FF' }}>/</span>CMD
+        <div style={{ fontFamily: 'Cormorant Garamond,serif', fontSize: '22px', fontWeight: 700, color: '#162018', letterSpacing: '8px', marginBottom: '6px' }}>
+          BRACU<span style={{ color: '#5C8C6A' }}>/</span>CMD
         </div>
-        <div style={{ fontFamily: 'IBM Plex Mono,monospace', fontSize: '9px', color: '#4A7A9B', letterSpacing: '4px', marginBottom: '40px' }}>
+        <div style={{ fontFamily: 'DM Mono,monospace', fontSize: '9px', color: '#6B7F6E', letterSpacing: '4px', marginBottom: '40px' }}>
           CLASSIFIED — STUDENTS ONLY
         </div>
-        <div style={{ fontFamily: 'IBM Plex Mono,monospace', fontSize: '9px', color: '#00B4FF', letterSpacing: '3px' }}>
+        <div style={{ fontFamily: 'DM Mono,monospace', fontSize: '9px', color: '#5C8C6A', letterSpacing: '3px' }}>
           AUTHENTICATING
         </div>
       </div>
@@ -165,26 +165,26 @@ export default function Dashboard() {
       <div style={{ ...s.page, paddingBottom: '70px' }}>
         {/* Nav */}
         <nav style={{ ...s.nav, padding: '0 16px' }}>
-          <div style={{ fontFamily: 'Bebas Neue,sans-serif', fontSize: '18px', letterSpacing: '3px' }}>
+          <div style={{ fontFamily: 'Cormorant Garamond,serif', fontSize: '18px', letterSpacing: '3px', fontWeight: 700, color: 'var(--ink)' }}>
             BRACU<span style={{ color: 'var(--red)' }}>/</span>CMD
             <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--red)', display: 'inline-block', marginLeft: '6px', verticalAlign: 'middle' }} />
             <span style={{ fontSize: '9px', letterSpacing: '2px', color: 'var(--faded)', marginLeft: '4px', verticalAlign: 'middle' }}>ONLINE</span>
           </div>
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-            <span style={{ fontSize: '9px', color: 'var(--faded)', border: '1px solid var(--border)', padding: '4px 8px' }}>ID: {studentId}</span>
+            <span style={{ fontSize: '9px', color: 'var(--faded)', border: '1px solid var(--border)', padding: '4px 8px', borderRadius: '3px' }}>ID: {studentId}</span>
             <button onClick={async () => { await fetch('/api/auth/session', { method: 'DELETE' }); router.push('/login') }}
-              style={{ fontSize: '9px', letterSpacing: '1.5px', textTransform: 'uppercase', background: 'none', border: 'none', color: 'var(--faded)', cursor: 'crosshair', fontFamily: 'IBM Plex Mono,monospace' }}>
+              style={{ fontSize: '9px', letterSpacing: '1.5px', textTransform: 'uppercase', background: 'none', border: 'none', color: 'var(--faded)', cursor: 'pointer', fontFamily: 'DM Sans,sans-serif' }}>
               SIGN OUT
             </button>
           </div>
         </nav>
 
         {/* Strip */}
-        <div style={{ overflow: 'hidden', borderBottom: '1px solid var(--border)', padding: '10px 0', background: 'rgba(242,237,228,0.01)', marginTop: '52px' }}>
+        <div style={{ overflow: 'hidden', borderBottom: '1px solid var(--border)', padding: '10px 0', background: 'rgba(92,140,106,0.03)', marginTop: '52px' }}>
           <div style={{ display: 'flex', gap: '40px', animation: 'scroll 20s linear infinite', width: 'max-content' }}>
             {[...Array(2)].flatMap(() => ['Academic AI', 'Student ID Auth', 'Faculty Reviews', 'Live USIS Data', 'CGPA Calculator', 'AI Resume'].map((t, i) => (
               <span key={t + i} style={{ fontSize: '8px', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--faded)', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                {t}<span style={{ color: 'rgba(0,180,255,0.3)' }}>//</span>
+                {t}<span style={{ color: 'rgba(92,140,106,0.4)' }}>//</span>
               </span>
             )))}
           </div>
@@ -195,15 +195,15 @@ export default function Dashboard() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '12px', alignItems: 'start' }}>
             <div>
               <div style={{ fontSize: '8px', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--red)', marginBottom: '6px' }}>// WELCOME BACK, STUDENT {studentId}</div>
-              <div style={{ fontFamily: 'Bebas Neue,sans-serif', fontSize: '28px', letterSpacing: '2px', lineHeight: 1.1, color: 'var(--paper)' }}>BRACU<br />COMMAND</div>
+              <div style={{ fontFamily: 'Cormorant Garamond,serif', fontSize: '28px', letterSpacing: '1px', lineHeight: 1.1, color: 'var(--ink)', fontWeight: 700 }}>BRACU<br />COMMAND</div>
             </div>
-            <div style={{ background: 'var(--ink2)', border: '1px solid var(--border)', padding: '10px 12px', textAlign: 'center', minWidth: '110px' }}>
+            <div style={{ background: 'var(--ink2)', border: '1px solid var(--border)', padding: '10px 12px', textAlign: 'center', minWidth: '110px', borderRadius: '3px' }}>
               <div style={{ fontSize: '8px', letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--faded)', marginBottom: '4px' }}>USIS SEAT DATA</div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'center', marginBottom: '2px' }}>
                 <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: 'var(--red)', display: 'inline-block' }} />
                 <span style={{ fontSize: '9px', color: 'var(--red)', fontWeight: 700, letterSpacing: '1px' }}>LIVE CDN</span>
               </div>
-              <div style={{ fontFamily: 'Bebas Neue,sans-serif', fontSize: '22px', letterSpacing: '2px', color: 'var(--paper)' }}>
+              <div style={{ fontFamily: 'DM Mono,monospace', fontSize: '22px', letterSpacing: '2px', color: 'var(--ink)' }}>
                 00:{String(timer).padStart(2, '0')}
               </div>
               <div style={{ fontSize: '8px', color: 'var(--faded)', letterSpacing: '0.5px', marginTop: '2px' }}>Refreshes every 60s</div>
@@ -211,10 +211,10 @@ export default function Dashboard() {
           </div>
 
           {/* Mobile Search */}
-          <div style={{ marginTop: '14px', background: 'var(--ink2)', border: '1px solid var(--border)', borderRadius: '4px', padding: '10px 12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ marginTop: '14px', background: '#FFFFFF', border: '1px solid var(--border)', borderRadius: '4px', padding: '10px 12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ color: 'var(--faded)', fontSize: '14px' }}>🔍</span>
             <input
-              style={{ flex: 1, background: 'transparent', border: 'none', color: 'var(--paper)', fontFamily: 'IBM Plex Mono,monospace', fontSize: '12px', outline: 'none' }}
+              style={{ flex: 1, background: 'transparent', border: 'none', color: 'var(--ink)', fontFamily: 'DM Sans,monospace', fontSize: '12px', outline: 'none' }}
               placeholder="Search modules..."
               value={search}
               onChange={e => setSearch(e.target.value)}
@@ -233,7 +233,7 @@ export default function Dashboard() {
 
           {filtered.length === 0 && (
             <div style={{ padding: '40px', textAlign: 'center', color: 'var(--faded)', fontSize: '11px' }}>
-              No modules found for "{search}"
+              No modules found for &quot;{search}&quot;
             </div>
           )}
 
@@ -247,34 +247,35 @@ export default function Dashboard() {
                 onMouseLeave={() => setHoveredTile(null)}
               >
                 <div style={{ fontSize: '22px', marginBottom: '8px' }}>{t.icon}</div>
-                <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--paper)', marginBottom: '4px', lineHeight: 1.3 }}>{t.name}</div>
+                <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--ink)', marginBottom: '4px', lineHeight: 1.3 }}>{t.name}</div>
                 <div style={{ fontSize: '9px', color: 'var(--faded)', lineHeight: 1.6, flex: 1 }}>{t.desc.substring(0, 50)}{t.desc.length > 50 ? '...' : ''}</div>
                 <div style={{ fontSize: '8px', letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--red)', marginTop: '8px' }}>{t.tag}</div>
               </button>
             ))}
           </div>
         </div>
+
         {/* CTA */}
         <div style={{ padding: '40px 16px', textAlign: 'center', borderTop: '1px solid var(--border)', marginTop: '8px' }}>
           <div style={{ fontSize: '8px', letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--red)', marginBottom: '10px' }}>// For every batch that comes after us</div>
-          <div style={{ fontFamily: 'Playfair Display,serif', fontStyle: 'italic', fontSize: '28px', fontWeight: 700, color: 'var(--paper)', lineHeight: 1.1, marginBottom: '10px' }}>Be the senior<br />you never had.</div>
+          <div style={{ fontFamily: 'Cormorant Garamond,serif', fontStyle: 'italic', fontSize: '28px', fontWeight: 700, color: 'var(--ink)', lineHeight: 1.1, marginBottom: '10px' }}>Be the senior<br />you never had.</div>
           <p style={{ fontSize: '11px', color: 'var(--faded)', lineHeight: 1.9, marginBottom: '20px' }}>Help grow BRACU Command — contribute resources, write reviews, share knowledge.</p>
           <button onClick={() => router.push('/resources')}
-            style={{ fontFamily: 'IBM Plex Mono,monospace', fontSize: '10px', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--ink)', background: 'var(--paper)', border: 'none', padding: '14px 28px', cursor: 'crosshair', width: '100%' }}>
+            style={{ fontFamily: 'DM Sans,sans-serif', fontSize: '10px', letterSpacing: '2px', textTransform: 'uppercase', color: '#F0F7F2', background: 'var(--red)', border: 'none', padding: '14px 28px', cursor: 'pointer', width: '100%', borderRadius: '3px' }}>
             Contribute Resources →
           </button>
         </div>
 
-        {/* Fixed Bottom Tab Bar — floating pill dock */}
-        <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 500, paddingBottom: 'env(safe-area-inset-bottom)', background: 'linear-gradient(to top, var(--ink) 60%, transparent)', paddingTop: '16px' }}>
-          <div style={{ margin: '0 12px 12px', background: '#0D1221', border: '1px solid rgba(0,180,255,0.2)', borderRadius: '50px', padding: '5px', display: 'flex', gap: '2px' }}>
+        {/* Fixed Bottom Tab Bar */}
+        <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 500, paddingBottom: 'env(safe-area-inset-bottom)', background: 'linear-gradient(to top, #F6FAF7 60%, transparent)', paddingTop: '16px' }}>
+          <div style={{ margin: '0 12px 12px', background: '#EDF5EF', border: '1px solid #D0E2D4', borderRadius: '50px', padding: '5px', display: 'flex', gap: '2px' }}>
             {BOTTOM_TABS.map(tab => (
               <button
                 key={tab.id}
                 onClick={() => { setCategory(tab.id); setSearch('') }}
-                style={{ flex: 1, padding: category === tab.id ? '8px 6px' : '8px 4px', background: category === tab.id ? 'var(--red)' : 'transparent', borderRadius: '40px', border: 'none', cursor: 'crosshair', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', transition: 'all .2s' }}>
-                <span style={{ fontSize: category === tab.id ? '16px' : '16px' }}>{tab.icon}</span>
-                <span style={{ fontSize: '7px', letterSpacing: '0.5px', textTransform: 'uppercase', fontFamily: 'IBM Plex Mono,monospace', color: category === tab.id ? '#0A0E1A' : 'var(--faded)', fontWeight: category === tab.id ? 700 : 400, whiteSpace: 'nowrap' }}>
+                style={{ flex: 1, padding: category === tab.id ? '8px 6px' : '8px 4px', background: category === tab.id ? 'var(--red)' : 'transparent', borderRadius: '40px', border: 'none', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', transition: 'all .2s' }}>
+                <span style={{ fontSize: '16px' }}>{tab.icon}</span>
+                <span style={{ fontSize: '7px', letterSpacing: '0.5px', textTransform: 'uppercase', fontFamily: 'DM Sans,sans-serif', color: category === tab.id ? '#F0F7F2' : 'var(--faded)', fontWeight: category === tab.id ? 700 : 400, whiteSpace: 'nowrap' }}>
                   {tab.label}
                 </span>
               </button>
@@ -283,45 +284,45 @@ export default function Dashboard() {
         </div>
 
         <style>{`
-          @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500;700&family=Playfair+Display:ital,wght@1,700&display=swap');
-          * { cursor: crosshair; box-sizing: border-box; margin: 0; padding: 0; }
-          :root { --ink: #0A0E1A; --ink2: #0D1221; --paper: #E8F4FF; --red: #00B4FF; --faded: #4A7A9B; --dim: #1A2A3A; --bronze: #00D4FF; --border: rgba(0,180,255,0.15); }
-          body { background: var(--ink); color: var(--paper); font-family: 'IBM Plex Mono', monospace; }
+          @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,700;1,400;1,700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap');
+          * { cursor: pointer; box-sizing: border-box; margin: 0; padding: 0; }
+          :root { --ink: #162018; --ink2: #EDF5EF; --paper: #F6FAF7; --red: #5C8C6A; --faded: #6B7F6E; --dim: #8FAA92; --bronze: #5C8C6A; --border: #D0E2D4; }
+          body { background: var(--paper); color: var(--ink); font-family: 'DM Sans', sans-serif; }
           @keyframes scroll { from{transform:translateX(0)} to{transform:translateX(-50%)} }
-          input::placeholder { color: #4A7A9B; }
+          input::placeholder { color: #8FAA92; }
         `}</style>
       </div>
     )
   }
 
-  // Desktop layout — unchanged
+  // Desktop layout
   return (
     <div style={s.page}>
       {/* Nav */}
       <nav style={s.nav}>
-        <div style={{ fontFamily: 'Bebas Neue,sans-serif', fontSize: '20px', letterSpacing: '4px' }}>
+        <div style={{ fontFamily: 'Cormorant Garamond,serif', fontSize: '20px', letterSpacing: '4px', fontWeight: 700, color: 'var(--ink)' }}>
           BRACU<span style={{ color: 'var(--red)' }}>/</span>CMD
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '10px', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--faded)' }}>
             <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--red)', display: 'inline-block' }} />Online
           </div>
-          <div style={{ fontSize: '10px', letterSpacing: '1px', color: 'var(--faded)', border: '1px solid var(--border)', padding: '5px 12px' }}>
+          <div style={{ fontSize: '10px', letterSpacing: '1px', color: 'var(--faded)', border: '1px solid var(--border)', padding: '5px 12px', borderRadius: '3px' }}>
             ID: {studentId}
           </div>
           <button onClick={async () => { await fetch('/api/auth/session', { method: 'DELETE' }); router.push('/login') }}
-            style={{ fontSize: '10px', letterSpacing: '2px', textTransform: 'uppercase', background: 'none', border: 'none', color: 'var(--faded)', cursor: 'crosshair', fontFamily: 'IBM Plex Mono,monospace' }}>
+            style={{ fontSize: '10px', letterSpacing: '2px', textTransform: 'uppercase', background: 'none', border: 'none', color: 'var(--faded)', cursor: 'pointer', fontFamily: 'DM Sans,sans-serif' }}>
             Sign Out
           </button>
         </div>
       </nav>
 
       {/* Strip */}
-      <div style={{ overflow: 'hidden', borderBottom: '1px solid var(--border)', padding: '12px 0', background: 'rgba(242,237,228,0.01)', marginTop: '52px' }}>
+      <div style={{ overflow: 'hidden', borderBottom: '1px solid var(--border)', padding: '12px 0', background: 'rgba(92,140,106,0.03)', marginTop: '52px' }}>
         <div style={{ display: 'flex', gap: '52px', animation: 'scroll 26s linear infinite', width: 'max-content' }}>
           {[...Array(2)].flatMap(() => ['Academic AI', 'Student ID Auth', 'Faculty Reviews', 'Live USIS Data', 'CGPA Calculator', 'AI Resume', 'Mock Exams', 'Study Groups', 'Course Ratings', 'Campus Map'].map((t, i) => (
             <span key={t + i} style={{ fontSize: '9px', letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--faded)', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '12px' }}>
-              {t}<span style={{ color: 'rgba(0,180,255,0.3)' }}>//</span>
+              {t}<span style={{ color: 'rgba(92,140,106,0.4)' }}>//</span>
             </span>
           )))}
         </div>
@@ -343,7 +344,7 @@ export default function Dashboard() {
               <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--red)', display: 'inline-block' }} />
               <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--red)', letterSpacing: '1px' }}>LIVE CDN</span>
             </div>
-            <div style={{ fontFamily: 'Bebas Neue,sans-serif', fontSize: '26px', letterSpacing: '2px', color: 'var(--paper)' }}>
+            <div style={{ fontFamily: 'DM Mono,monospace', fontSize: '26px', letterSpacing: '2px', color: 'var(--ink)' }}>
               00:{String(timer).padStart(2, '0')}
             </div>
             <div style={{ fontSize: '9px', color: 'var(--faded)', letterSpacing: '1px' }}>Refreshes every 60 seconds</div>
@@ -357,10 +358,10 @@ export default function Dashboard() {
 
         {/* macOS pill nav — desktop only */}
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '28px' }}>
-          <div style={{ background: '#080C18', border: '1px solid rgba(0,180,255,0.15)', borderRadius: '40px', padding: '4px', display: 'flex', gap: '2px' }}>
+          <div style={{ background: '#EDF5EF', border: '1px solid #D0E2D4', borderRadius: '40px', padding: '4px', display: 'flex', gap: '2px' }}>
             {CATEGORIES.filter(c => c !== 'All').map(c => (
               <button key={c} onClick={() => setCategory(c)}
-                style={{ borderRadius: '30px', padding: '8px 22px', fontFamily: 'IBM Plex Mono,monospace', fontSize: '10px', letterSpacing: '1px', border: 'none', cursor: 'crosshair', transition: 'all .2s', background: category === c ? 'var(--red)' : 'transparent', color: category === c ? 'var(--ink)' : 'var(--faded)', fontWeight: category === c ? 700 : 400 }}>
+                style={{ borderRadius: '30px', padding: '8px 22px', fontFamily: 'DM Sans,sans-serif', fontSize: '10px', letterSpacing: '1px', border: 'none', cursor: 'pointer', transition: 'all .2s', background: category === c ? 'var(--red)' : 'transparent', color: category === c ? '#F0F7F2' : 'var(--faded)', fontWeight: category === c ? 700 : 400 }}>
                 {c}
               </button>
             ))}
@@ -380,10 +381,10 @@ export default function Dashboard() {
               <div style={s.grid}>
                 {catTiles.map(t => (
                   <button key={t.id} style={tileStyle(t.id)} onClick={() => router.push(`/${t.id}`)} onMouseEnter={() => setHoveredTile(t.id)} onMouseLeave={() => setHoveredTile(null)}>
-                    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '1px', background: 'var(--red)', transform: hoveredTile === t.id ? 'scaleX(1)' : 'scaleX(0)', transformOrigin: 'left', transition: 'transform .3s' }} />
-                    <div style={{ fontFamily: 'Bebas Neue,sans-serif', fontSize: '32px', color: 'rgba(242,237,228,0.05)', letterSpacing: '2px', lineHeight: 1, marginBottom: '10px' }}>{t.num}</div>
+                    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '2px', background: 'var(--red)', transform: hoveredTile === t.id ? 'scaleX(1)' : 'scaleX(0)', transformOrigin: 'left', transition: 'transform .3s' }} />
+                    <div style={{ fontFamily: 'DM Mono,monospace', fontSize: '32px', color: 'rgba(92,140,106,0.07)', letterSpacing: '2px', lineHeight: 1, marginBottom: '10px' }}>{t.num}</div>
                     <div style={{ fontSize: '18px', marginBottom: '8px' }}>{t.icon}</div>
-                    <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--paper)', letterSpacing: '.3px', marginBottom: '6px' }}>{t.name}</div>
+                    <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--ink)', letterSpacing: '.3px', marginBottom: '6px' }}>{t.name}</div>
                     <div style={{ fontSize: '11px', color: 'var(--faded)', lineHeight: 1.8, flex: 1 }}>{t.desc}</div>
                     <div style={{ fontSize: '9px', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--red)', marginTop: '12px' }}>{t.tag}</div>
                     <div style={{ fontSize: '14px', color: 'var(--red)', marginTop: '10px', opacity: hoveredTile === t.id ? 1 : 0, transition: 'all .2s' }}>→</div>
@@ -396,18 +397,18 @@ export default function Dashboard() {
 
         {filtered.length === 0 && (
           <div style={{ padding: '60px', textAlign: 'center', color: 'var(--faded)', fontSize: '12px', letterSpacing: '1px' }}>
-            No modules found for "{search}"
+            No modules found for &quot;{search}&quot;
           </div>
         )}
 
         {/* CTA */}
         <div style={{ padding: '72px 0', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
-          <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', fontFamily: 'Bebas Neue,sans-serif', fontSize: 'clamp(80px,14vw,180px)', color: 'rgba(242,237,228,0.016)', letterSpacing: '8px', whiteSpace: 'nowrap', pointerEvents: 'none', userSelect: 'none' }}>COMMAND</div>
+          <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', fontFamily: 'Cormorant Garamond,serif', fontSize: 'clamp(80px,14vw,180px)', color: 'rgba(92,140,106,0.06)', letterSpacing: '8px', whiteSpace: 'nowrap', pointerEvents: 'none', userSelect: 'none' }}>COMMAND</div>
           <div style={{ position: 'relative', zIndex: 1 }}>
             <div style={{ fontSize: '9px', letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--red)', marginBottom: '12px' }}>// For every batch that comes after us</div>
-            <div style={{ fontFamily: 'Playfair Display,serif', fontStyle: 'italic', fontSize: 'clamp(32px,4.5vw,56px)', fontWeight: 700, color: 'var(--paper)', lineHeight: 1.05, marginBottom: '12px' }}>Be the senior<br />you never had.</div>
+            <div style={{ fontFamily: 'Cormorant Garamond,serif', fontStyle: 'italic', fontSize: 'clamp(32px,4.5vw,56px)', fontWeight: 700, color: 'var(--ink)', lineHeight: 1.05, marginBottom: '12px' }}>Be the senior<br />you never had.</div>
             <p style={{ fontSize: '11px', color: 'var(--faded)', lineHeight: 2, maxWidth: '360px', margin: '0 auto 28px' }}>Help grow BRACU Command — contribute resources, write reviews, share knowledge.</p>
-            <button onClick={() => router.push('/resources')} style={{ fontFamily: 'IBM Plex Mono,monospace', fontSize: '10px', letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--ink)', background: 'var(--paper)', border: 'none', padding: '14px 32px', cursor: 'crosshair' }}>
+            <button onClick={() => router.push('/resources')} style={{ fontFamily: 'DM Sans,sans-serif', fontSize: '10px', letterSpacing: '2.5px', textTransform: 'uppercase', color: '#F0F7F2', background: 'var(--red)', border: 'none', padding: '14px 32px', cursor: 'pointer', borderRadius: '3px' }}>
               Contribute Resources →
             </button>
           </div>
@@ -417,7 +418,7 @@ export default function Dashboard() {
       {/* Footer */}
       <footer style={{ borderTop: '1px solid var(--border)', padding: '22px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', maxWidth: '1200px', margin: '0 auto' }}>
         <div>
-          <div style={{ fontFamily: 'Bebas Neue,sans-serif', fontSize: '17px', letterSpacing: '3px' }}>BRACU<span style={{ color: 'var(--red)' }}>/</span>CMD</div>
+          <div style={{ fontFamily: 'Cormorant Garamond,serif', fontSize: '17px', letterSpacing: '3px', fontWeight: 700, color: 'var(--ink)' }}>BRACU<span style={{ color: 'var(--red)' }}>/</span>CMD</div>
           <div style={{ fontSize: '9px', letterSpacing: '1.5px', color: 'var(--dim)', marginTop: '4px', textTransform: 'uppercase' }}>Academic Intelligence System — v2.0</div>
         </div>
         <div style={{ fontSize: '9px', color: 'var(--faded)', letterSpacing: '1px', textAlign: 'right', lineHeight: 1.8 }}>
@@ -428,12 +429,12 @@ export default function Dashboard() {
       <button style={{ ...s.backTop, opacity: showTop ? 1 : 0, pointerEvents: showTop ? 'all' : 'none' }} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>↑</button>
 
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500;700&family=Playfair+Display:ital,wght@1,700&display=swap');
-        * { cursor: crosshair; box-sizing: border-box; margin: 0; padding: 0; }
-        :root { --ink: #0A0E1A; --ink2: #0D1221; --paper: #E8F4FF; --red: #00B4FF; --faded: #4A7A9B; --dim: #1A2A3A; --bronze: #00D4FF; --border: rgba(0,180,255,0.15); }
-        body { background: var(--ink); color: var(--paper); font-family: 'IBM Plex Mono', monospace; }
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,700;1,400;1,700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap');
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        :root { --ink: #162018; --ink2: #EDF5EF; --paper: #F6FAF7; --red: #5C8C6A; --faded: #6B7F6E; --dim: #8FAA92; --bronze: #5C8C6A; --border: #D0E2D4; }
+        body { background: var(--paper); color: var(--ink); font-family: 'DM Sans', sans-serif; }
         @keyframes scroll { from{transform:translateX(0)} to{transform:translateX(-50%)} }
-        input::placeholder { color: #4A7A9B; }
+        input::placeholder { color: #8FAA92; }
       `}</style>
     </div>
   )
